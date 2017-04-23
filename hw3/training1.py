@@ -5,26 +5,26 @@ from keras.layers import Dense, GlobalAveragePooling2D
 from keras import backend as K
 import os
 import random
-import Image
+from PIL import Image
+import numpy as np
 
-height = 300
-width = 300
+height = 299
+width = 299
 
 baseFolder = '/Users/anshulramachandran/Documents/Year3 Q3/CS148/CUB_200_2011/CUB_200_2011/images'
 imageListFile = '/Users/anshulramachandran/Documents/Year3 Q3/CS148/CUB_200_2011/CUB_200_2011/images.txt'
 labelListFile = '/Users/anshulramachandran/Documents/Year3 Q3/CS148/CUB_200_2011/CUB_200_2011/image_class_labels.txt'
 imageInfo = {}
 
-with f = open(imageListFile, 'r'):
-    for line in f:
-        [img_id, path] = line.split(' ')
-        imageInfo[img_id] = [path]
+f = open(imageListFile, 'r')
+for line in f:
+    [img_id, path] = line.split(' ')
+    imageInfo[img_id] = path[:-1]
 
-with f = open(labelListFile, 'r'):
-    for line in f:
-        [img_id, label] = line.split(' ')
-        imageInfo[img_id] = imageInfo[img_id].append(str(int(label) - 1))
-
+f = open(labelListFile, 'r')
+for line in f:
+    [img_id, label] = line.split(' ')
+    imageInfo[img_id] = [imageInfo[img_id], label]
 
 def processImage(imagePath):
     image = Image.open(imagePath)
@@ -40,21 +40,23 @@ def imgGenerator(batchSize):
     """
     Yield X and Y data when the batch is filled.
     """
-
-    X = np.zeros((batchSize, height, width, 3))
-    Y = np.zeros((batchSize, 1))
-
+    X = np.zeros(shape=(batchSize, height, width, 3))
+    Y = np.zeros(shape=(batchSize, 200))
     while True:
         indices_for_batch = random.sample(range(1, 11789), batchSize)
         for i in range(batchSize):
             imgInfo = imageInfo[str(indices_for_batch[i])]
             X[i] = processImage(os.path.join(baseFolder, imgInfo[0]))
-            Y[i] = int(imgInfo[1])
+            imgOut = np.zeros(200)
+            imgOut[int(imgInfo[1]) - 1] = 1
+            Y[i] = imgOut
+        print('made batch')
         yield X, Y
 
 
 # create the base pre-trained model
-base_model = InceptionV3(weights='imagenet', include_top=False, input_shape=(width, height, 3)))
+#base_model = InceptionV3(weights='imagenet', include_top=False, input_shape=(width, height, 3))
+base_model = InceptionV3(weights='imagenet', include_top=False)
 
 # add a global spatial average pooling layer
 x = base_model.output

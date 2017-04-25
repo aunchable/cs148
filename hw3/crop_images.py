@@ -48,19 +48,18 @@ for line in f:
 def processImage(imagePath, bbox):
     image = Image.open(imagePath)
     image = image.crop(bbox)
-    return image
-    # (currw, currh) = image.size
-    # if currw >= currh:
-    #     image = image.resize((width, int(float(currh) * float(width) / float(currw))))
-    # else:
-    #     image = image.resize((int(float(currw) * float(height) / float(currh)), height))
-    # # image.thumbnail((width, height), Image.ANTIALIAS)
-    # # return image
-    # background = Image.new('RGB', (width, height), (0, 0, 0))
-    # background.paste(
-    #     image, (int((width - image.size[0]) / 2), int((height - image.size[1]) / 2))
-    # )
-    # return background
+    (currw, currh) = image.size
+    if currw >= currh:
+        image = image.resize((width, int(float(currh) * float(width) / float(currw))))
+    else:
+        image = image.resize((int(float(currw) * float(height) / float(currh)), height))
+    # image.thumbnail((width, height), Image.ANTIALIAS)
+    # return image
+    background = Image.new('RGB', (width, height), (0, 0, 0))
+    background.paste(
+        image, (int((width - image.size[0]) / 2), int((height - image.size[1]) / 2))
+    )
+    return background
 
 shutil.copytree(validationFolder, './CUB_200_2011/train2')
 shutil.copytree(validationFolder, './CUB_200_2011/validation2')
@@ -69,10 +68,10 @@ for path, subdirs, files in os.walk('./CUB_200_2011/train2'):
     for name in files:
         if name[0] != '.':
             new_img = processImage(os.path.join(path, name), imageInfo[name])
-            scipy.misc.imsave(os.path.join(path, name), np.asarray(new_img))
+            scipy.misc.imsave(os.path.join(path, name), new_img)
 
 for path, subdirs, files in os.walk('./CUB_200_2011/validation2'):
     for name in files:
         if name[0] != '.':
             new_img = processImage(os.path.join(path, name), imageInfo[name])
-            scipy.misc.imsave(os.path.join(path, name), np.asarray(new_img))
+            scipy.misc.imsave(os.path.join(path, name), new_img)

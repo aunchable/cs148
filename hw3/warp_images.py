@@ -30,35 +30,46 @@ for line in f:
     [img_id, path] = line.split(' ')
     name_id[path[:-1].split('/')[-1]] = [img_id, os.path.join(baseImgPath, path[:-1])]
 
-imgName = 'Black_Footed_Albatross_0039_796132.jpg'
+imgName = 'Black_Footed_Albatross_0078_796126.jpg'
 
-print(name_id[imgName])
+# print(name_id[imgName])
 image = Image.open(name_id[imgName][1])
 info = partInfo[name_id[imgName][0]]
-print(info)
+# print(info)
 if info[0][0] < info[1][0]:
     image = image.transpose(Image.FLIP_LEFT_RIGHT)
     info[0][0] = image.size[0] - info[0][0]
     info[1][0] = image.size[0] - info[1][0]
 
+distBetweenPoints = np.sqrt(pow(info[1][0] - info[0][0], 2) + pow(info[1][1] - info[0][1], 2))
+
+distToTop = info[1][1]
+distToBot = image.size[1] - info[1][1]
+distToLeft = info[1][0]
+distToRight = image.size[0] - info[1][0]
+
+
+padTop = max(0, int(distToBot - distToTop))
+padBot = max(0, int(distToTop - distToBot))
+padLeft = max(0, int(distToRight - distToLeft))
+padRight = max(0, int(distToLeft - distToRight))
+
+background = Image.new('RGB', (padLeft + image.size[0] + padRight, padTop + image.size[1] + padBot), (0, 0, 0))
+background.paste(
+    image, (padLeft, padTop)
+)
+
 rotation_angle = np.arctan((info[0][1]-info[1][1])/(info[0][0]-info[1][0]))*180.0/3.14159265
-print(rotation_angle)
+# print(rotation_angle)
 
-image = image.rotate(rotation_angle)
+image2 = background.rotate(rotation_angle)
 
-scipy.misc.imsave('./example.jpg', image)
+# print(distBetweenPoints)
 
+bbox = (int(image2.size[0] / 2.0 - 2 * distBetweenPoints), int(image2.size[1] / 2.0 - 2 * distBetweenPoints),
+        int(image2.size[0] / 2.0 + 2 * distBetweenPoints), int(image2.size[1] / 2.0 + 2 * distBetweenPoints))
 
-# (currw, currh) = image.size
-# if currw >= currh:
-#     image = image.resize((width, int(float(currh) * float(width) / float(currw))))
-# else:
-#     image = image.resize((int(float(currw) * float(height) / float(currh)), height))
-# # image.thumbnail((width, height), Image.ANTIALIAS)
-# # return image
-# background = Image.new('RGB', (width, height), (0, 0, 0))
-# background.paste(
-#     image, (int((width - image.size[0]) / 2), int((height - image.size[1]) / 2))
-# )
-#
-# scipy.misc.imsave('./example.jpg', background)
+image2 = image2.crop(bbox)
+# print(image2)
+
+scipy.misc.imsave('./example2.jpg', image2)

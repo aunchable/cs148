@@ -69,10 +69,10 @@ for path, subdirs, files in os.walk('./CUB_200_2011/train2'):
     for name in files:
         if name[0] != '.':
             new_img = processImage(os.path.join(path, name), imageInfo[name])
-            scipy.misc.imsave(os.path.join(path, name), new_img)
+            scipy.misc.imsave(os.path.join(path, name), np.asarray(new_img))
 
 for path, subdirs, files in os.walk('./CUB_200_2011/validation2'):
     for name in files:
         if name[0] != '.':
             new_img = processImage(os.path.join(path, name), imageInfo[name])
-            scipy.misc.imsave(os.path.join(path, name), new_img)
+            scipy.misc.imsave(os.path.join(path, name), np.asarray(new_img))

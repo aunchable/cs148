@@ -10,9 +10,6 @@ import random
 from PIL import Image
 import numpy as np
 
-random.seed(42)
-
-
 height = 256
 width = 256
 
@@ -84,6 +81,8 @@ base_model = InceptionV3(weights='imagenet', include_top=False, input_shape=(hei
 # add a global spatial average pooling layer
 x = base_model.output
 x = GlobalAveragePooling2D()(x)
+# let's add a fully-connected layer
+x = Dense(1024, activation='relu')(x)
 # and a logistic layer -- we have 200 classes
 predictions = Dense(200, activation='softmax')(x)
 
@@ -92,10 +91,12 @@ model = Model(inputs=base_model.input, outputs=predictions)
 
 # we chose to train everything but the top 2 inception blocks, i.e. we will
 # freeze the first 172 layers and unfreeze the rest:
-for layer in model.layers[:172]:
-   layer.trainable = False
-for layer in model.layers[172:]:
-   layer.trainable = True
+for layer in base_model.layers:
+    layer.trainable = False
+# for layer in model.layers[:172]:
+#    layer.trainable = False
+# for layer in model.layers[172:]:
+#    layer.trainable = True
 
 # we need to recompile the model for these modifications to take effect
 # we use SGD with a low learning rate

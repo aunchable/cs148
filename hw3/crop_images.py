@@ -13,12 +13,12 @@ import scipy.misc
 # bboxListFile = '/Users/anshulramachandran/Documents/Year3 Q3/CS148/CUB_200_2011/CUB_200_2011/bounding_boxes.txt'
 
 
-trainFolder = './CUB_200_2011/CUB_200_2011/train'
-validationFolder = './CUB_200_2011/CUB_200_2011/validation'
-imageListFile = './CUB_200_2011/CUB_200_2011/images.txt'
-labelListFile = './CUB_200_2011/CUB_200_2011/image_class_labels.txt'
-splitListFile = './CUB_200_2011/CUB_200_2011/train_test_split.txt'
-bboxListFile = './CUB_200_2011/CUB_200_2011/bounding_boxes.txt'
+trainFolder = './CUB_200_2011/train'
+validationFolder = './CUB_200_2011/validation'
+imageListFile = './CUB_200_2011/images.txt'
+labelListFile = './CUB_200_2011/image_class_labels.txt'
+splitListFile = './CUB_200_2011/train_test_split.txt'
+bboxListFile = './CUB_200_2011/bounding_boxes.txt'
 
 height = 256
 width = 256
@@ -61,16 +61,16 @@ def processImage(imagePath, bbox):
     )
     return background
 
-shutil.copytree(validationFolder, './CUB_200_2011/CUB_200_2011/train2')
-shutil.copytree(validationFolder, './CUB_200_2011/CUB_200_2011/validation2')
+shutil.copytree(validationFolder, './CUB_200_2011/train2')
+shutil.copytree(validationFolder, './CUB_200_2011/validation2')
 
-for path, subdirs, files in os.walk('./CUB_200_2011/CUB_200_2011/train2'):
+for path, subdirs, files in os.walk('./CUB_200_2011/train2'):
     for name in files:
         if name[0] != '.':
             new_img = processImage(os.path.join(path, name), imageInfo[name])
             scipy.misc.imsave(os.path.join(path, name), new_img)
 
-for path, subdirs, files in os.walk('./CUB_200_2011/CUB_200_2011/validation2'):
+for path, subdirs, files in os.walk('./CUB_200_2011/validation2'):
     for name in files:
         if name[0] != '.':
             new_img = processImage(os.path.join(path, name), imageInfo[name])

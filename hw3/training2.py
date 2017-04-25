@@ -16,19 +16,20 @@ random.seed(42)
 height = 256
 width = 256
 
-trainFolder = '/Users/anshulramachandran/Documents/Year3 Q3/CS148/CUB_200_2011/CUB_200_2011/train'
-validationFolder = '/Users/anshulramachandran/Documents/Year3 Q3/CS148/CUB_200_2011/CUB_200_2011/validation'
-imageListFile = '/Users/anshulramachandran/Documents/Year3 Q3/CS148/CUB_200_2011/CUB_200_2011/images.txt'
-labelListFile = '/Users/anshulramachandran/Documents/Year3 Q3/CS148/CUB_200_2011/CUB_200_2011/image_class_labels.txt'
-splitListFile = '/Users/anshulramachandran/Documents/Year3 Q3/CS148/CUB_200_2011/CUB_200_2011/train_test_split.txt'
-bboxListFile = '/Users/anshulramachandran/Documents/Year3 Q3/CS148/CUB_200_2011/CUB_200_2011/bounding_boxes.txt'
+# trainFolder = '/Users/anshulramachandran/Documents/Year3 Q3/CS148/CUB_200_2011/CUB_200_2011/train'
+# validationFolder = '/Users/anshulramachandran/Documents/Year3 Q3/CS148/CUB_200_2011/CUB_200_2011/validation'
+# imageListFile = '/Users/anshulramachandran/Documents/Year3 Q3/CS148/CUB_200_2011/CUB_200_2011/images.txt'
+# labelListFile = '/Users/anshulramachandran/Documents/Year3 Q3/CS148/CUB_200_2011/CUB_200_2011/image_class_labels.txt'
+# splitListFile = '/Users/anshulramachandran/Documents/Year3 Q3/CS148/CUB_200_2011/CUB_200_2011/train_test_split.txt'
+# bboxListFile = '/Users/anshulramachandran/Documents/Year3 Q3/CS148/CUB_200_2011/CUB_200_2011/bounding_boxes.txt'
 
 
-# baseFolder = './CUB_200_2011/CUB_200_2011/images'
-# imageListFile = './CUB_200_2011/CUB_200_2011/images.txt'
-# labelListFile = './CUB_200_2011/CUB_200_2011/image_class_labels.txt'
-# splitListFile = './CUB_200_2011/CUB_200_2011/train_test_split.txt'
-# bboxListFile = './CUB_200_2011/CUB_200_2011/bounding_boxes.txt'
+trainFolder = './CUB_200_2011/CUB_200_2011/train'
+validationFolder = './CUB_200_2011/CUB_200_2011/validation'
+imageListFile = './CUB_200_2011/CUB_200_2011/images.txt'
+labelListFile = './CUB_200_2011/CUB_200_2011/image_class_labels.txt'
+splitListFile = './CUB_200_2011/CUB_200_2011/train_test_split.txt'
+bboxListFile = './CUB_200_2011/CUB_200_2011/bounding_boxes.txt'
 
 imageInfo = {}
 
@@ -71,26 +72,6 @@ def processImage(imagePath, bbox):
         image, (int((width - image.size[0]) / 2), int((height - image.size[1]) / 2))
     )
     return background
-
-
-def imgGenerator(batchSize, train):
-    """
-    Yield X and Y data when the batch is filled.
-    """
-    X = np.zeros(shape=(batchSize, height, width, 3))
-    Y = np.zeros(shape=(batchSize, 200))
-    while True:
-        if train:
-            indices_for_batch = random.sample(indices_for_train, batchSize)
-        else:
-            indices_for_batch = random.sample(indices_for_val, batchSize)
-        for i in range(batchSize):
-            imgInfo = imageInfo[str(indices_for_batch[i])]
-            X[i] = processImage(os.path.join(baseFolder, imgInfo[0]), imgInfo[2])
-            imgOut = np.zeros(200)
-            imgOut[int(imgInfo[1]) - 1] = 1
-            Y[i] = imgOut
-        yield X, Y
 
 
 # create the base pre-trained model

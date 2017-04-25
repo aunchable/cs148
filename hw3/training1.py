@@ -168,10 +168,12 @@ model.compile(optimizer=SGD(lr=0.0001, momentum=0.9), loss='categorical_crossent
 
 # we train our model again (this time fine-tuning the top 2 inception blocks
 # alongside the top Dense layers
-history = model.fit_generator(imgGenerator(10, True),
-                              steps_per_epoch=int(float(len(indices_for_train)) / 10.0),
+history = model.fit_generator(imgGenerator(32, True),
+                              steps_per_epoch=int(float(len(indices_for_train)) / 32.0),
                               epochs=10,
                               validation_data=imgGenerator(100, False),
                               validation_steps=50)
 
 print(history.history)
+
+model.save('model1.h5')

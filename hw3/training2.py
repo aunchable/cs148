@@ -99,11 +99,12 @@ for layer in model.layers[172:]:
 
 # we need to recompile the model for these modifications to take effect
 # we use SGD with a low learning rate
-from keras.optimizers import SGD
-model.compile(optimizer=SGD(lr=0.0001, momentum=0.9), loss='categorical_crossentropy', metrics=['acc'])
+from keras.optimizers import Adam
+model.compile(optimizer=Adam(lr=0.001), loss='categorical_crossentropy', metrics=['acc'])
 
 train_datagen = ImageDataGenerator(
         zoom_range=0.2,
+        rotation_range=15,
         horizontal_flip=True)
 
 test_datagen = ImageDataGenerator()
@@ -121,7 +122,7 @@ validation_generator = test_datagen.flow_from_directory(
 # we train our model again (this time fine-tuning the top 2 inception blocks
 # alongside the top Dense layers
 history = model.fit_generator(train_generator,
-                              steps_per_epoch=128,
+                              steps_per_epoch=int(float(len(indices_for_train)) / 32.0),
                               epochs=50,
                               validation_data=validation_generator,
                               validation_steps=int(float(len(indices_for_val)) / 32.0))

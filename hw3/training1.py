@@ -31,18 +31,18 @@ class TrainingHistory(Callback):
 height = 256
 width = 256
 
-baseFolder = '/Users/anshulramachandran/Documents/Year3 Q3/CS148/CUB_200_2011/CUB_200_2011/images'
-imageListFile = '/Users/anshulramachandran/Documents/Year3 Q3/CS148/CUB_200_2011/CUB_200_2011/images.txt'
-labelListFile = '/Users/anshulramachandran/Documents/Year3 Q3/CS148/CUB_200_2011/CUB_200_2011/image_class_labels.txt'
-splitListFile = '/Users/anshulramachandran/Documents/Year3 Q3/CS148/CUB_200_2011/CUB_200_2011/train_test_split.txt'
-bboxListFile = '/Users/anshulramachandran/Documents/Year3 Q3/CS148/CUB_200_2011/CUB_200_2011/bounding_boxes.txt'
+#baseFolder = '/Users/anshulramachandran/Documents/Year3 Q3/CS148/CUB_200_2011/CUB_200_2011/images'
+#imageListFile = '/Users/anshulramachandran/Documents/Year3 Q3/CS148/CUB_200_2011/CUB_200_2011/images.txt'
+#labelListFile = '/Users/anshulramachandran/Documents/Year3 Q3/CS148/CUB_200_2011/CUB_200_2011/image_class_labels.txt'
+#splitListFile = '/Users/anshulramachandran/Documents/Year3 Q3/CS148/CUB_200_2011/CUB_200_2011/train_test_split.txt'
+#bboxListFile = '/Users/anshulramachandran/Documents/Year3 Q3/CS148/CUB_200_2011/CUB_200_2011/bounding_boxes.txt'
 
 
-# baseFolder = '~/CUB_200_2011/CUB_200_2011/images'
-# imageListFile = '~/CUB_200_2011/CUB_200_2011/images.txt'
-# labelListFile = '~/CUB_200_2011/CUB_200_2011/image_class_labels.txt'
-# splitListFile = '~/CUB_200_2011/CUB_200_2011/train_test_split.txt'
-# bboxListFile = '~/CUB_200_2011/CUB_200_2011/bounding_boxes.txt'
+baseFolder = './CUB_200_2011/CUB_200_2011/images'
+imageListFile = './CUB_200_2011/CUB_200_2011/images.txt'
+labelListFile = './CUB_200_2011/CUB_200_2011/image_class_labels.txt'
+splitListFile = './CUB_200_2011/CUB_200_2011/train_test_split.txt'
+bboxListFile = './CUB_200_2011/CUB_200_2011/bounding_boxes.txt'
 
 imageInfo = {}
 

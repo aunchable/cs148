@@ -48,18 +48,19 @@ for line in f:
 def processImage(imagePath, bbox):
     image = Image.open(imagePath)
     image = image.crop(bbox)
-    (currw, currh) = image.size
-    if currw >= currh:
-        image = image.resize((width, int(float(currh) * float(width) / float(currw))))
-    else:
-        image = image.resize((int(float(currw) * float(height) / float(currh)), height))
-    # image.thumbnail((width, height), Image.ANTIALIAS)
-    # return image
-    background = Image.new('RGB', (width, height), (0, 0, 0))
-    background.paste(
-        image, (int((width - image.size[0]) / 2), int((height - image.size[1]) / 2))
-    )
-    return background
+    return image
+    # (currw, currh) = image.size
+    # if currw >= currh:
+    #     image = image.resize((width, int(float(currh) * float(width) / float(currw))))
+    # else:
+    #     image = image.resize((int(float(currw) * float(height) / float(currh)), height))
+    # # image.thumbnail((width, height), Image.ANTIALIAS)
+    # # return image
+    # background = Image.new('RGB', (width, height), (0, 0, 0))
+    # background.paste(
+    #     image, (int((width - image.size[0]) / 2), int((height - image.size[1]) / 2))
+    # )
+    # return background
 
 shutil.copytree(validationFolder, './CUB_200_2011/train2')
 shutil.copytree(validationFolder, './CUB_200_2011/validation2')

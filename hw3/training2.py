@@ -104,11 +104,12 @@ from keras.optimizers import Adam
 model.compile(optimizer=Adam(lr=0.001), loss='categorical_crossentropy', metrics=['acc'])
 
 train_datagen = ImageDataGenerator(
+        rescale=1./255,
         zoom_range=0.2,
         rotation_range=15,
         horizontal_flip=True)
 
-test_datagen = ImageDataGenerator()
+test_datagen = ImageDataGenerator(rescale=1./255)
 
 train_generator = train_datagen.flow_from_directory(
         trainFolder,

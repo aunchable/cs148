@@ -30,20 +30,20 @@ class TrainingHistory(Callback):
 height = 256
 width = 256
 
-# trainFolder = '/Users/anshulramachandran/Documents/Year3 Q3/CS148/CUB_200_2011/CUB_200_2011/train'
-# validationFolder = '/Users/anshulramachandran/Documents/Year3 Q3/CS148/CUB_200_2011/CUB_200_2011/validation'
+# trainFolder = '/Users/anshulramachandran/Documents/Year3 Q3/CS148/CUB_200_2011/CUB_200_2011/train2'
+# validationFolder = '/Users/anshulramachandran/Documents/Year3 Q3/CS148/CUB_200_2011/CUB_200_2011/validation2'
 # imageListFile = '/Users/anshulramachandran/Documents/Year3 Q3/CS148/CUB_200_2011/CUB_200_2011/images.txt'
 # labelListFile = '/Users/anshulramachandran/Documents/Year3 Q3/CS148/CUB_200_2011/CUB_200_2011/image_class_labels.txt'
 # splitListFile = '/Users/anshulramachandran/Documents/Year3 Q3/CS148/CUB_200_2011/CUB_200_2011/train_test_split.txt'
 # bboxListFile = '/Users/anshulramachandran/Documents/Year3 Q3/CS148/CUB_200_2011/CUB_200_2011/bounding_boxes.txt'
 
 
-trainFolder = './CUB_200_2011/CUB_200_2011/train'
-validationFolder = './CUB_200_2011/CUB_200_2011/validation'
-imageListFile = './CUB_200_2011/CUB_200_2011/images.txt'
-labelListFile = './CUB_200_2011/CUB_200_2011/image_class_labels.txt'
-splitListFile = './CUB_200_2011/CUB_200_2011/train_test_split.txt'
-bboxListFile = './CUB_200_2011/CUB_200_2011/bounding_boxes.txt'
+trainFolder = './CUB_200_2011/train2'
+validationFolder = './CUB_200_2011/validation2'
+imageListFile = './CUB_200_2011/images.txt'
+labelListFile = './CUB_200_2011/image_class_labels.txt'
+splitListFile = './CUB_200_2011/train_test_split.txt'
+bboxListFile = './CUB_200_2011/bounding_boxes.txt'
 
 imageInfo = {}
 name_label = {}
@@ -81,6 +81,7 @@ for line in f:
 
 def processImage(imagePath):
     image = Image.open(imagePath)
+    image = image.crop(bbox)
     (currw, currh) = image.size
     if currw >= currh:
         image = image.resize((width, int(float(currh) * float(width) / float(currw))))
@@ -166,9 +167,9 @@ history = model.fit_generator(train_generator,
 print(history.history)
 print(history2.losses, history2.val_losses, history2.accs, history2.val_accs)
 
-model.save('model1.h5')
+model.save('model2.h5')
 #
-# model = load_model('model1.h5')
+# model = load_model('model2.h5')
 
 # Generate confusion matrix
 confusion_matrix = np.zeros(shape=(200,200))
@@ -191,11 +192,11 @@ confusion_matrix_img = np.zeros(shape=(1000, 1000))
 for i in range(len(confusion_matrix_img)):
     for j in range(len(confusion_matrix_img[0])):
         confusion_matrix_img[i][j] = confusion_matrix[int(i/5.0), int(j/5.0)]
-scipy.misc.imsave('confusion_matrix1.jpg', confusion_matrix_img)
+scipy.misc.imsave('confusion_matrix2.jpg', confusion_matrix_img)
 for i in range(10):
     confusion_matrix[i][i] = 0
 confusion_matrix_img = np.zeros(shape=(1000, 1000))
 for i in range(len(confusion_matrix_img)):
     for j in range(len(confusion_matrix_img[0])):
         confusion_matrix_img[i][j] = confusion_matrix[int(i/5.0), int(j/5.0)]
-scipy.misc.imsave('confusion_matrix1_no_diagonal.jpg', confusion_matrix_img)
+scipy.misc.imsave('confusion_matrix2_no_diagonal.jpg', confusion_matrix_img)

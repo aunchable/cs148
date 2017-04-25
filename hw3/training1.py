@@ -2,7 +2,7 @@ from keras.applications.inception_v3 import InceptionV3
 from keras.preprocessing import image
 from keras.models import Model
 from keras.layers import Dense, GlobalAveragePooling2D
-from keras.callbacks import TensorBoard
+from keras.callbacks import Callback, History, ModelCheckpoint
 from keras import backend as K
 import os
 import random
@@ -11,16 +11,51 @@ import numpy as np
 
 random.seed(42)
 
-height = 500
-width = 500
+
+class TrainingHistory(Callback):
+    def on_train_begin(self, logs={}):
+        self.losses = []
+        self.val_losses = []
+        self.accs = []
+        self.val_accs = []
+
+    def on_batch_end(self, batch, logs={}):
+        self.losses.append(logs.get('loss'))
+        self.accs.append(logs.get('acc'))
+
+    def on_epoch_end(self, epoch, logs={}):
+        self.val_losses.append(logs.get('val_loss'))
+        self.val_accs.append(logs.get('val_acc'))
+
+
+height = 256
+width = 256
 
 baseFolder = '/Users/anshulramachandran/Documents/Year3 Q3/CS148/CUB_200_2011/CUB_200_2011/images'
 imageListFile = '/Users/anshulramachandran/Documents/Year3 Q3/CS148/CUB_200_2011/CUB_200_2011/images.txt'
 labelListFile = '/Users/anshulramachandran/Documents/Year3 Q3/CS148/CUB_200_2011/CUB_200_2011/image_class_labels.txt'
+splitListFile = '/Users/anshulramachandran/Documents/Year3 Q3/CS148/CUB_200_2011/CUB_200_2011/train_test_split.txt'
+bboxListFile = '/Users/anshulramachandran/Documents/Year3 Q3/CS148/CUB_200_2011/CUB_200_2011/bounding_boxes.txt'
+
+
+# baseFolder = '~/CUB_200_2011/CUB_200_2011/images'
+# imageListFile = '~/CUB_200_2011/CUB_200_2011/images.txt'
+# labelListFile = '~/CUB_200_2011/CUB_200_2011/image_class_labels.txt'
+# splitListFile = '~/CUB_200_2011/CUB_200_2011/train_test_split.txt'
+# bboxListFile = '~/CUB_200_2011/CUB_200_2011/bounding_boxes.txt'
+
 imageInfo = {}
 
-indices_for_train = random.sample(range(1, 11789), int(0.8 * 11788))
-indices_for_val = list(set(range(1,11789)) - set(indices_for_train))
+indices_for_train = []
+indices_for_val = []
+
+f = open(splitListFile, 'r')
+for line in f:
+    [img_id, img_class] = line.split(' ')
+    if img_class[0] == '1':
+        indices_for_train.append(img_id)
+    else:
+        indices_for_val.append(img_id)
 
 f = open(imageListFile, 'r')
 for line in f:
@@ -30,10 +65,20 @@ for line in f:
 f = open(labelListFile, 'r')
 for line in f:
     [img_id, label] = line.split(' ')
-    imageInfo[img_id] = [imageInfo[img_id], label]
+    imageInfo[img_id] = [imageInfo[img_id], label[:-1]]
 
-def processImage(imagePath):
+f = open(bboxListFile, 'r')
+for line in f:
+    [img_id, x1, y1, w, h] = line.split(' ')
+    x1 = float(x1)
+    y1 = float(y1)
+    x2 = x1 + float(w)
+    y2 = y1 + float(h)
+    imageInfo[img_id] = [imageInfo[img_id][0], imageInfo[img_id][1], (x1, y1, x2, y2)]
+
+def processImage(imagePath, bbox):
     image = Image.open(imagePath)
+    #image = image.crop(bbox)
     image.thumbnail((width, height), Image.ANTIALIAS)
     background = Image.new('RGB', (width, height), (0, 0, 0))
     background.paste(
@@ -55,7 +100,7 @@ def imgGenerator(batchSize, train):
             indices_for_batch = random.sample(indices_for_val, batchSize)
         for i in range(batchSize):
             imgInfo = imageInfo[str(indices_for_batch[i])]
-            X[i] = processImage(os.path.join(baseFolder, imgInfo[0]))
+            X[i] = processImage(os.path.join(baseFolder, imgInfo[0]), imgInfo[2])
             imgOut = np.zeros(200)
             imgOut[int(imgInfo[1]) - 1] = 1
             Y[i] = imgOut
@@ -86,17 +131,19 @@ for layer in base_model.layers:
     layer.trainable = False
 
 # compile the model (should be done *after* setting layers to non-trainable)
-model.compile(optimizer='rmsprop', loss='categorical_crossentropy')
+# model.compile(optimizer='rmsprop', loss='categorical_crossentropy', metrics=['acc'])
 
 # for i, layer in enumerate(model.layers):
 #    print(i, layer.name)
 
 # train the model on the new data for a few epochs
-history1 = model.fit_generator(imgGenerator(10, True),
-                               steps_per_epoch=int(0.8 * 11788 / 10.0),
-                               epochs=10,
-                               validation_data=imgGenerator(100, False),
-                               validation_steps=20)
+# history = model.fit_generator(imgGenerator(10, True),
+#                               steps_per_epoch=10,
+#                               epochs=2,
+#                               validation_data=imgGenerator(100, False),
+#                               validation_steps=2)
+#
+# print(history.history)
 
 # at this point, the top layers are well trained and we can start fine-tuning
 # convolutional layers from inception V3. We will freeze the bottom N layers
@@ -117,12 +164,14 @@ for layer in model.layers[172:]:
 # we need to recompile the model for these modifications to take effect
 # we use SGD with a low learning rate
 from keras.optimizers import SGD
-model.compile(optimizer=SGD(lr=0.0001, momentum=0.9), loss='categorical_crossentropy')
+model.compile(optimizer=SGD(lr=0.0001, momentum=0.9), loss='categorical_crossentropy', metrics=['acc'])
 
 # we train our model again (this time fine-tuning the top 2 inception blocks
 # alongside the top Dense layers
-history2 = model.fit_generator(imgGenerator(10, True),
-                               steps_per_epoch=int(0.8 * 11788 / 10.0),
-                               epochs=10,
-                               validation_data=imgGenerator(100, False),
-                               validation_steps=20)
+history = model.fit_generator(imgGenerator(10, True),
+                              steps_per_epoch=int(float(len(indices_for_train)) / 10.0),
+                              epochs=10,
+                              validation_data=imgGenerator(100, False),
+                              validation_steps=50)
+
+print(history.history)

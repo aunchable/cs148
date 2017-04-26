@@ -5,9 +5,15 @@ import numpy as np
 import shutil
 import scipy.misc
 
-baseImgPath = '/Users/anshulramachandran/Documents/Year3 Q3/CS148/CUB_200_2011/CUB_200_2011/images'
+trainFolder = '/Users/anshulramachandran/Documents/Year3 Q3/CS148/CUB_200_2011/CUB_200_2011/train3'
+validationFolder = '/Users/anshulramachandran/Documents/Year3 Q3/CS148/CUB_200_2011/CUB_200_2011/validation3'
 partLocsFile = '/Users/anshulramachandran/Documents/Year3 Q3/CS148/CUB_200_2011/CUB_200_2011/parts/part_locs.txt'
 imageListFile = '/Users/anshulramachandran/Documents/Year3 Q3/CS148/CUB_200_2011/CUB_200_2011/images.txt'
+
+# trainFolder = './CUB_200_2011/CUB_200_2011/train3'
+# validationFolder = './CUB_200_2011/CUB_200_2011/validation3'
+# partLocsFile = './CUB_200_2011/CUB_200_2011/parts/part_locs.txt'
+# imageListFile = './CUB_200_2011/CUB_200_2011/images.txt'
 
 imageInfo = {}
 partInfo = {}
@@ -28,48 +34,70 @@ for i in range(1, 11789):
 f = open(imageListFile, 'r')
 for line in f:
     [img_id, path] = line.split(' ')
-    name_id[path[:-1].split('/')[-1]] = [img_id, os.path.join(baseImgPath, path[:-1])]
-
-imgName = 'Black_Footed_Albatross_0078_796126.jpg'
-
-# print(name_id[imgName])
-image = Image.open(name_id[imgName][1])
-info = partInfo[name_id[imgName][0]]
-# print(info)
-if info[0][0] < info[1][0]:
-    image = image.transpose(Image.FLIP_LEFT_RIGHT)
-    info[0][0] = image.size[0] - info[0][0]
-    info[1][0] = image.size[0] - info[1][0]
-
-distBetweenPoints = np.sqrt(pow(info[1][0] - info[0][0], 2) + pow(info[1][1] - info[0][1], 2))
-
-distToTop = info[1][1]
-distToBot = image.size[1] - info[1][1]
-distToLeft = info[1][0]
-distToRight = image.size[0] - info[1][0]
+    name_id[path[:-1].split('/')[-1]] = img_id
 
 
-padTop = max(0, int(distToBot - distToTop))
-padBot = max(0, int(distToTop - distToBot))
-padLeft = max(0, int(distToRight - distToLeft))
-padRight = max(0, int(distToLeft - distToRight))
+def warp_image(imgName, imgPath):
 
-background = Image.new('RGB', (padLeft + image.size[0] + padRight, padTop + image.size[1] + padBot), (0, 0, 0))
-background.paste(
-    image, (padLeft, padTop)
-)
+    # print(name_id[imgName])
+    image = Image.open(imgPath)
+    info = partInfo[name_id[imgName]]
+    # print(info)
 
-rotation_angle = np.arctan((info[0][1]-info[1][1])/(info[0][0]-info[1][0]))*180.0/3.14159265
-# print(rotation_angle)
+    if info[0][0] == 0 or info[0][1] == 0 or info[1][0] == 0 or info[1][1] == 0:
+        return image
 
-image2 = background.rotate(rotation_angle)
+    if info[0][0] < info[1][0]:
+        image = image.transpose(Image.FLIP_LEFT_RIGHT)
+        info[0][0] = image.size[0] - info[0][0]
+        info[1][0] = image.size[0] - info[1][0]
 
-# print(distBetweenPoints)
+    distBetweenPoints = np.sqrt(pow(info[1][0] - info[0][0], 2) + pow(info[1][1] - info[0][1], 2))
 
-bbox = (int(image2.size[0] / 2.0 - 2 * distBetweenPoints), int(image2.size[1] / 2.0 - 2 * distBetweenPoints),
-        int(image2.size[0] / 2.0 + 2 * distBetweenPoints), int(image2.size[1] / 2.0 + 2 * distBetweenPoints))
+    distToTop = info[1][1]
+    distToBot = image.size[1] - info[1][1]
+    distToLeft = info[1][0]
+    distToRight = image.size[0] - info[1][0]
 
-image2 = image2.crop(bbox)
-# print(image2)
 
-scipy.misc.imsave('./example2.jpg', image2)
+    padTop = max(0, int(distToBot - distToTop))
+    padBot = max(0, int(distToTop - distToBot))
+    padLeft = max(0, int(distToRight - distToLeft))
+    padRight = max(0, int(distToLeft - distToRight))
+
+    background = Image.new('RGB', (padLeft + image.size[0] + padRight, padTop + image.size[1] + padBot), (0, 0, 0))
+    background.paste(
+        image, (padLeft, padTop)
+    )
+
+    try:
+        rotation_angle = np.arctan((info[0][1]-info[1][1])/(info[0][0]-info[1][0]))*180.0/3.14159265
+        # print(rotation_angle)
+        image2 = background.rotate(rotation_angle)
+    except ZeroDivisionError:
+        image2 = background
+
+    # print(distBetweenPoints)
+
+    bbox = (int(image2.size[0] / 2.0 - 2 * distBetweenPoints), int(image2.size[1] / 2.0 - 2 * distBetweenPoints),
+            int(image2.size[0] / 2.0 + 2 * distBetweenPoints), int(image2.size[1] / 2.0 + 2 * distBetweenPoints))
+
+    image2 = image2.crop(bbox)
+    # print(image2)
+
+    return image2
+
+    # scipy.misc.imsave('./example2.jpg', image2)
+
+# 
+# for path, subdirs, files in os.walk(trainFolder):
+#     for name in files:
+#         if name[0] != '.':
+#             new_img = warp_image(name, os.path.join(path, name))
+#             scipy.misc.imsave(os.path.join(path, name), new_img)
+
+for path, subdirs, files in os.walk(validationFolder):
+    for name in files:
+        if name[0] != '.':
+            new_img = warp_image(name, os.path.join(path, name))
+            scipy.misc.imsave(os.path.join(path, name), new_img)

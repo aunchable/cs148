@@ -77,8 +77,8 @@ def processImage(imagePath):
     return background
 
 
-model1 = load_model('/Users/anshulramachandran/Desktop/model1.h5')
-model2 = load_model('/Users/anshulramachandran/Desktop/model2.h5')
+model1 = load_model('/Users/anshulramachandran/Desktop/model2_2.h5')
+model2 = load_model('/Users/anshulramachandran/Desktop/model3.h5')
 
 
 count = 0

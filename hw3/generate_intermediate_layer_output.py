@@ -15,8 +15,8 @@ import csv
 height = 256
 width = 256
 
-trainFolder = '/Users/anshulramachandran/Documents/Year3 Q3/CS148/CUB_200_2011/CUB_200_2011/train'
-validationFolder = '/Users/anshulramachandran/Documents/Year3 Q3/CS148/CUB_200_2011/CUB_200_2011/validation'
+trainFolder = '/Users/anshulramachandran/Documents/Year3 Q3/CS148/CUB_200_2011/CUB_200_2011/train3'
+validationFolder = '/Users/anshulramachandran/Documents/Year3 Q3/CS148/CUB_200_2011/CUB_200_2011/validation3'
 imageListFile = '/Users/anshulramachandran/Documents/Year3 Q3/CS148/CUB_200_2011/CUB_200_2011/images.txt'
 labelListFile = '/Users/anshulramachandran/Documents/Year3 Q3/CS148/CUB_200_2011/CUB_200_2011/image_class_labels.txt'
 splitListFile = '/Users/anshulramachandran/Documents/Year3 Q3/CS148/CUB_200_2011/CUB_200_2011/train_test_split.txt'
@@ -94,7 +94,7 @@ predictions = Dense(200, activation='softmax')(x)
 # this is the model we will train
 model = Model(inputs=base_model.input, outputs=predictions)
 
-model = load_model('/Users/anshulramachandran/Desktop/model1.h5')
+model = load_model('/Users/anshulramachandran/Desktop/model3.h5')
 
 
 # create the base pre-trained model
@@ -121,6 +121,25 @@ for i, layer in enumerate(model2.layers):
 inters = []
 
 count = 0
+for path, subdirs, files in os.walk(trainFolder):
+    for name in files:
+        if name[0] != '.':
+            img_id = float(name_label[name])
+            curr_img = np.asarray([np.asarray(processImage(os.path.join(path, name)))])
+            inter_output = np.insert(model2.predict(curr_img/255.0)[0], 0, img_id)
+            inters.append(inter_output)
+            count += 1
+            if count % 100 == 0:
+                print(count)
+
+with open("./intermediates/train3.csv", "w") as f:
+    writer = csv.writer(f)
+    writer.writerows(inters)
+
+
+inters = []
+
+count = 0
 for path, subdirs, files in os.walk(validationFolder):
     for name in files:
         if name[0] != '.':
@@ -132,6 +151,6 @@ for path, subdirs, files in os.walk(validationFolder):
             if count % 100 == 0:
                 print(count)
 
-with open("./intermediates/validation1.csv", "w") as f:
+with open("./intermediates/validation3.csv", "w") as f:
     writer = csv.writer(f)
     writer.writerows(inters)

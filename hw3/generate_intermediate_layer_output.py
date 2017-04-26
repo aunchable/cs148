@@ -10,7 +10,7 @@ import random
 from PIL import Image
 import numpy as np
 import scipy.misc
-
+import csv
 
 height = 256
 width = 256
@@ -23,12 +23,6 @@ splitListFile = '/Users/anshulramachandran/Documents/Year3 Q3/CS148/CUB_200_2011
 bboxListFile = '/Users/anshulramachandran/Documents/Year3 Q3/CS148/CUB_200_2011/CUB_200_2011/bounding_boxes.txt'
 
 
-# trainFolder = './CUB_200_2011/CUB_200_2011/train'
-# validationFolder = './CUB_200_2011/CUB_200_2011/validation'
-# imageListFile = './CUB_200_2011/CUB_200_2011/images.txt'
-# labelListFile = './CUB_200_2011/CUB_200_2011/image_class_labels.txt'
-# splitListFile = './CUB_200_2011/CUB_200_2011/train_test_split.txt'
-# bboxListFile = './CUB_200_2011/CUB_200_2011/bounding_boxes.txt'
 
 imageInfo = {}
 name_label = {}
@@ -52,7 +46,7 @@ for line in f:
 f = open(imageListFile, 'r')
 for line in f:
     [img_id, path] = line.split(' ')
-    name_label[path[:-1].split('/')[-1]] = int(imageInfo[img_id]) - 1
+    name_label[path[:-1].split('/')[-1]] = img_id
     imageInfo[img_id] = [path[:-1], imageInfo[img_id]]
 
 f = open(bboxListFile, 'r')
@@ -63,6 +57,7 @@ for line in f:
     x2 = x1 + float(w)
     y2 = y1 + float(h)
     imageInfo[img_id] = [imageInfo[img_id][0], imageInfo[img_id][1], (x1, y1, x2, y2)]
+
 
 def processImage(imagePath):
     image = Image.open(imagePath)
@@ -79,7 +74,6 @@ def processImage(imagePath):
     )
 
     return background
-
 
 
 # create the base pre-trained model
@@ -100,53 +94,44 @@ predictions = Dense(200, activation='softmax')(x)
 # this is the model we will train
 model = Model(inputs=base_model.input, outputs=predictions)
 
-# we chose to train everything but the top 2 inception blocks, i.e. we will
-# freeze the first 172 layers and unfreeze the rest:
-for layer in base_model.layers:
-    layer.trainable = False
-# for layer in model.layers[:172]:
-#    layer.trainable = False
-# for layer in model.layers[172:]:
-#    layer.trainable = True
-
-# we need to recompile the model for these modifications to take effect
-# we use SGD with a low learning rate
-from keras.optimizers import Adam
-model.compile(optimizer=Adam(lr=0.001), loss='categorical_crossentropy', metrics=['acc'])
-
 model = load_model('/Users/anshulramachandran/Desktop/model1.h5')
 
-# Generate confusion matrix
-confusion_matrix = np.zeros(shape=(200,200))
+
+# create the base pre-trained model
+#base_model = InceptionV3(weights='imagenet', include_top=False, input_shape=(width, height, 3))
+base_model2 = InceptionV3(weights='imagenet', include_top=False, input_shape=(height, width, 3))
+
+# for i, layer in enumerate(base_model.layers):
+#    print(i, layer.name)
+
+# add a global spatial average pooling layer
+x2 = base_model2.output
+x2 = GlobalAveragePooling2D()(x2)
+# let's add a fully-connected layer
+predictions2 = Dense(1024, activation='relu')(x2)
+
+# this is the model we will train
+model2 = Model(inputs=base_model2.input, outputs=predictions2)
+
+for i, layer in enumerate(model2.layers):
+    print(i, layer.name, model.layers[i].name)
+    layer.set_weights(model.layers[i].get_weights())
+
+
+inters = []
 
 count = 0
 for path, subdirs, files in os.walk(validationFolder):
-# for path, subdirs, files in os.walk('./CUB_200_2011/CUB_200_2011/validation'):
     for name in files:
         if name[0] != '.':
-            class_true = name_label[name]
+            img_id = float(name_label[name])
             curr_img = np.asarray([np.asarray(processImage(os.path.join(path, name)))])
-            class_pred = np.argmax(model.predict(curr_img/255.0))
-            confusion_matrix[class_true][class_pred] += 1
+            inter_output = np.insert(model2.predict(curr_img/255.0)[0], 0, img_id)
+            inters.append(inter_output)
             count += 1
             if count % 100 == 0:
                 print(count)
 
-# for i in range(len(testY)):
-#     class_true = np.argmax(testY[i])
-#     digit_pred = np.argmax(predY[i])
-#     confusion_matrix[digit_true][digit_pred] += 1
-confusion_matrix = confusion_matrix.astype(int)
-confusion_matrix = -confusion_matrix
-confusion_matrix_img = np.zeros(shape=(1000, 1000))
-for i in range(len(confusion_matrix_img)):
-    for j in range(len(confusion_matrix_img[0])):
-        confusion_matrix_img[i][j] = confusion_matrix[int(i/5.0), int(j/5.0)]
-scipy.misc.imsave('./graphs/confusion_matrix1.jpg', confusion_matrix_img)
-for i in range(200):
-    confusion_matrix[i][i] = 0
-confusion_matrix_img = np.zeros(shape=(1000, 1000))
-for i in range(len(confusion_matrix_img)):
-    for j in range(len(confusion_matrix_img[0])):
-        confusion_matrix_img[i][j] = confusion_matrix[int(i/5.0), int(j/5.0)]
-scipy.misc.imsave('./graphs/confusion_matrix1_no_diagonal.jpg', confusion_matrix_img)
+with open("./intermediates/validation1.csv", "w") as f:
+    writer = csv.writer(f)
+    writer.writerows(inters)

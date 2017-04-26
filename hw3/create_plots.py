@@ -11,7 +11,10 @@ def plotGraph(data, title, fname, isBatchGraph):
     else:
         plt.xlabel('Epoch Number')
     plt.title(title)
-    plt.plot(x, data)
+    if isBatchGraph:
+        plt.scatter(x, data)
+    else:
+        plt.plot(x, data)
     plt.savefig('./graphs/' + fname + '.png')
     plt.clf()
     plt.cla()

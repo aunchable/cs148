@@ -15,14 +15,15 @@ with open('/Users/anshulramachandran/Desktop/all_train.csv', newline='') as csvf
     filereader = csv.reader(csvfile, delimiter=',')
     for row in filereader:
         trainX.append([float(val) for val in row[1:]])
-        trainY.append(int(row[0]))
+        trainY.append(int(row[0]) - 1)
 
 with open('/Users/anshulramachandran/Desktop/all_validation.csv', newline='') as csvfile:
     filereader = csv.reader(csvfile, delimiter=',')
     for row in filereader:
         testX.append([float(val) for val in row[1:]])
-        testY.append(int(row[0]))
+        testY.append(int(row[0]) - 1)
 
+print('start')
 clf = svm.SVC(gamma=0.001, C=100.)
 clf.fit(trainX, trainY)
 

@@ -66,8 +66,6 @@ def processImage(imagePath):
         image = image.resize((width, int(float(currh) * float(width) / float(currw))))
     else:
         image = image.resize((int(float(currw) * float(height) / float(currh)), height))
-    # image.thumbnail((width, height), Image.ANTIALIAS)
-    # return image
     background = Image.new('RGB', (width, height), (0, 0, 0))
     background.paste(
         image, (int((width - image.size[0]) / 2), int((height - image.size[1]) / 2))
@@ -77,11 +75,7 @@ def processImage(imagePath):
 
 
 # create the base pre-trained model
-#base_model = InceptionV3(weights='imagenet', include_top=False, input_shape=(width, height, 3))
 base_model = InceptionV3(weights='imagenet', include_top=False, input_shape=(height, width, 3))
-
-# for i, layer in enumerate(base_model.layers):
-#    print(i, layer.name)
 
 # add a global spatial average pooling layer
 x = base_model.output
@@ -98,11 +92,7 @@ model = load_model('/Users/anshulramachandran/Desktop/model3.h5')
 
 
 # create the base pre-trained model
-#base_model = InceptionV3(weights='imagenet', include_top=False, input_shape=(width, height, 3))
 base_model2 = InceptionV3(weights='imagenet', include_top=False, input_shape=(height, width, 3))
-
-# for i, layer in enumerate(base_model.layers):
-#    print(i, layer.name)
 
 # add a global spatial average pooling layer
 x2 = base_model2.output

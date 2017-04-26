@@ -83,11 +83,7 @@ def processImage(imagePath):
 
 
 # create the base pre-trained model
-#base_model = InceptionV3(weights='imagenet', include_top=False, input_shape=(width, height, 3))
 base_model = InceptionV3(weights='imagenet', include_top=False, input_shape=(height, width, 3))
-
-# for i, layer in enumerate(base_model.layers):
-#    print(i, layer.name)
 
 # add a global spatial average pooling layer
 x = base_model.output
@@ -104,13 +100,8 @@ model = Model(inputs=base_model.input, outputs=predictions)
 # freeze the first 172 layers and unfreeze the rest:
 for layer in base_model.layers:
     layer.trainable = False
-# for layer in model.layers[:172]:
-#    layer.trainable = False
-# for layer in model.layers[172:]:
-#    layer.trainable = True
 
 # we need to recompile the model for these modifications to take effect
-# we use SGD with a low learning rate
 from keras.optimizers import Adam
 model.compile(optimizer=Adam(lr=0.001), loss='categorical_crossentropy', metrics=['acc'])
 
@@ -121,7 +112,6 @@ confusion_matrix = np.zeros(shape=(200,200))
 
 count = 0
 for path, subdirs, files in os.walk(validationFolder):
-# for path, subdirs, files in os.walk('./CUB_200_2011/CUB_200_2011/validation'):
     for name in files:
         if name[0] != '.':
             class_true = name_label[name]
@@ -132,10 +122,6 @@ for path, subdirs, files in os.walk(validationFolder):
             if count % 100 == 0:
                 print(count)
 
-# for i in range(len(testY)):
-#     class_true = np.argmax(testY[i])
-#     digit_pred = np.argmax(predY[i])
-#     confusion_matrix[digit_true][digit_pred] += 1
 confusion_matrix = confusion_matrix.astype(int)
 confusion_matrix = -confusion_matrix
 confusion_matrix_img = np.zeros(shape=(1000, 1000))

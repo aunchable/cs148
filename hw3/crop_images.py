@@ -53,8 +53,7 @@ def processImage(imagePath, bbox):
         image = image.resize((width, int(float(currh) * float(width) / float(currw))))
     else:
         image = image.resize((int(float(currw) * float(height) / float(currh)), height))
-    # image.thumbnail((width, height), Image.ANTIALIAS)
-    # return image
+
     background = Image.new('RGB', (width, height), (0, 0, 0))
     background.paste(
         image, (int((width - image.size[0]) / 2), int((height - image.size[1]) / 2))

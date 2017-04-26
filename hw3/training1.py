@@ -78,7 +78,6 @@ for line in f:
 
 def processImage(imagePath, bbox):
     image = Image.open(imagePath)
-    #image = image.crop(bbox)
     image.thumbnail((width, height), Image.ANTIALIAS)
     background = Image.new('RGB', (width, height), (0, 0, 0))
     background.paste(
@@ -108,11 +107,7 @@ def imgGenerator(batchSize, train):
 
 
 # create the base pre-trained model
-#base_model = InceptionV3(weights='imagenet', include_top=False, input_shape=(width, height, 3))
 base_model = InceptionV3(weights='imagenet', include_top=False, input_shape=(width, height, 3))
-
-# for i, layer in enumerate(base_model.layers):
-#    print(i, layer.name)
 
 # add a global spatial average pooling layer
 x = base_model.output
@@ -125,41 +120,8 @@ predictions = Dense(200, activation='softmax')(x)
 # this is the model we will train
 model = Model(inputs=base_model.input, outputs=predictions)
 
-# first: train only the top layers (which were randomly initialized)
-# i.e. freeze all convolutional InceptionV3 layers
 for layer in base_model.layers:
     layer.trainable = False
-
-# compile the model (should be done *after* setting layers to non-trainable)
-# model.compile(optimizer='rmsprop', loss='categorical_crossentropy', metrics=['acc'])
-
-# for i, layer in enumerate(model.layers):
-#    print(i, layer.name)
-
-# train the model on the new data for a few epochs
-# history = model.fit_generator(imgGenerator(10, True),
-#                               steps_per_epoch=10,
-#                               epochs=2,
-#                               validation_data=imgGenerator(100, False),
-#                               validation_steps=2)
-#
-# print(history.history)
-
-# at this point, the top layers are well trained and we can start fine-tuning
-# convolutional layers from inception V3. We will freeze the bottom N layers
-# and train the remaining top layers.
-
-# let's visualize layer names and layer indices to see how many layers
-# we should freeze:
-# for i, layer in enumerate(model.layers):
-#    print(i, layer.name)
-
-# we chose to train everything but the top 2 inception blocks, i.e. we will
-# freeze the first 172 layers and unfreeze the rest:
-for layer in model.layers[:172]:
-   layer.trainable = False
-for layer in model.layers[172:]:
-   layer.trainable = True
 
 # we need to recompile the model for these modifications to take effect
 # we use SGD with a low learning rate

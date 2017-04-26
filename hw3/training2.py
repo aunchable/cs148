@@ -1,3 +1,5 @@
+# FOR PROBLEM 1
+
 from keras.applications.inception_v3 import InceptionV3
 from keras.preprocessing import image
 from keras.preprocessing.image import ImageDataGenerator
@@ -86,8 +88,6 @@ def processImage(imagePath):
         image = image.resize((width, int(float(currh) * float(width) / float(currw))))
     else:
         image = image.resize((int(float(currw) * float(height) / float(currh)), height))
-    # image.thumbnail((width, height), Image.ANTIALIAS)
-    # return image
     background = Image.new('RGB', (width, height), (0, 0, 0))
     background.paste(
         image, (int((width - image.size[0]) / 2), int((height - image.size[1]) / 2))
@@ -97,11 +97,7 @@ def processImage(imagePath):
 
 
 # create the base pre-trained model
-#base_model = InceptionV3(weights='imagenet', include_top=False, input_shape=(width, height, 3))
 base_model = InceptionV3(weights='imagenet', include_top=False, input_shape=(height, width, 3))
-
-# for i, layer in enumerate(base_model.layers):
-#    print(i, layer.name)
 
 # add a global spatial average pooling layer
 x = base_model.output
@@ -114,14 +110,8 @@ predictions = Dense(200, activation='softmax')(x)
 # this is the model we will train
 model = Model(inputs=base_model.input, outputs=predictions)
 
-# we chose to train everything but the top 2 inception blocks, i.e. we will
-# freeze the first 172 layers and unfreeze the rest:
 for layer in base_model.layers:
     layer.trainable = False
-# for layer in model.layers[:172]:
-#    layer.trainable = False
-# for layer in model.layers[172:]:
-#    layer.trainable = True
 
 # we need to recompile the model for these modifications to take effect
 # we use SGD with a low learning rate
@@ -155,47 +145,8 @@ history = model.fit_generator(train_generator,
                               validation_data=validation_generator,
                               validation_steps=int(float(len(indices_for_val)) / 32.0),
                               callbacks=[history2])
-#
-# history = model.fit_generator(train_generator,
-#                               steps_per_epoch=5,
-#                               epochs=2,
-#                               validation_data=validation_generator,
-#                               validation_steps=3,
-#                               callbacks=[history2])
-#
+
 print(history.history)
 print(history2.losses, history2.val_losses, history2.accs, history2.val_accs)
 
 model.save('model1.h5')
-#
-# model = load_model('model1.h5')
-
-# Generate confusion matrix
-confusion_matrix = np.zeros(shape=(200,200))
-
-for path, subdirs, files in os.walk(validationFolder):
-# for path, subdirs, files in os.walk('./CUB_200_2011/CUB_200_2011/validation'):
-    for name in files:
-        if name[0] != '.':
-            class_true = name_label[name]
-            class_pred = np.argmax(model.predict(np.asarray([np.asarray(processImage(os.path.join(path, name)))])))
-            confusion_matrix[class_true][class_pred] += 1
-
-# for i in range(len(testY)):
-#     class_true = np.argmax(testY[i])
-#     digit_pred = np.argmax(predY[i])
-#     confusion_matrix[digit_true][digit_pred] += 1
-confusion_matrix = confusion_matrix.astype(int)
-confusion_matrix = -confusion_matrix
-confusion_matrix_img = np.zeros(shape=(1000, 1000))
-for i in range(len(confusion_matrix_img)):
-    for j in range(len(confusion_matrix_img[0])):
-        confusion_matrix_img[i][j] = confusion_matrix[int(i/5.0), int(j/5.0)]
-scipy.misc.imsave('confusion_matrix1.jpg', confusion_matrix_img)
-for i in range(10):
-    confusion_matrix[i][i] = 0
-confusion_matrix_img = np.zeros(shape=(1000, 1000))
-for i in range(len(confusion_matrix_img)):
-    for j in range(len(confusion_matrix_img[0])):
-        confusion_matrix_img[i][j] = confusion_matrix[int(i/5.0), int(j/5.0)]
-scipy.misc.imsave('confusion_matrix1_no_diagonal.jpg', confusion_matrix_img)

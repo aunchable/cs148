@@ -39,10 +39,8 @@ for line in f:
 
 def warp_image(imgName, imgPath):
 
-    # print(name_id[imgName])
     image = Image.open(imgPath)
     info = partInfo[name_id[imgName]]
-    # print(info)
 
     if info[0][0] == 0 or info[0][1] == 0 or info[1][0] == 0 or info[1][1] == 0:
         return image
@@ -72,29 +70,23 @@ def warp_image(imgName, imgPath):
 
     try:
         rotation_angle = np.arctan((info[0][1]-info[1][1])/(info[0][0]-info[1][0]))*180.0/3.14159265
-        # print(rotation_angle)
         image2 = background.rotate(rotation_angle)
     except ZeroDivisionError:
         image2 = background
-
-    # print(distBetweenPoints)
 
     bbox = (int(image2.size[0] / 2.0 - 2 * distBetweenPoints), int(image2.size[1] / 2.0 - 2 * distBetweenPoints),
             int(image2.size[0] / 2.0 + 2 * distBetweenPoints), int(image2.size[1] / 2.0 + 2 * distBetweenPoints))
 
     image2 = image2.crop(bbox)
-    # print(image2)
 
     return image2
 
-    # scipy.misc.imsave('./example2.jpg', image2)
 
-# 
-# for path, subdirs, files in os.walk(trainFolder):
-#     for name in files:
-#         if name[0] != '.':
-#             new_img = warp_image(name, os.path.join(path, name))
-#             scipy.misc.imsave(os.path.join(path, name), new_img)
+for path, subdirs, files in os.walk(trainFolder):
+    for name in files:
+        if name[0] != '.':
+            new_img = warp_image(name, os.path.join(path, name))
+            scipy.misc.imsave(os.path.join(path, name), new_img)
 
 for path, subdirs, files in os.walk(validationFolder):
     for name in files:

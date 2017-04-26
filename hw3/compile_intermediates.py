@@ -18,40 +18,47 @@ for line in f:
 with open('/Users/anshulramachandran/Desktop/train1.csv', newline='') as csvfile:
     filereader = csv.reader(csvfile, delimiter=',')
     for row in filereader:
-        trainEmbeddings[row[0]] = [float(val) for val in row[1:]]
+        img_id = str(int(float(row[0])))
+        trainEmbeddings[img_id] = [float(val) for val in row[1:]]
 
 with open('/Users/anshulramachandran/Desktop/validation1.csv', newline='') as csvfile:
     filereader = csv.reader(csvfile, delimiter=',')
     for row in filereader:
-        validationEmbeddings[row[0]] = [float(val) for val in row[1:]]
+        img_id = str(int(float(row[0])))
+        validationEmbeddings[img_id] = [float(val) for val in row[1:]]
 
 with open('/Users/anshulramachandran/Desktop/train2.csv', newline='') as csvfile:
     filereader = csv.reader(csvfile, delimiter=',')
     for row in filereader:
-        trainEmbeddings[row[0]] = trainEmbeddings[row[0]].append([float(val) for val in row[1:]])
+        img_id = str(int(float(row[0])))
+        trainEmbeddings[img_id] = trainEmbeddings[img_id] + [float(val) for val in row[1:]]
 
 with open('/Users/anshulramachandran/Desktop/validation2.csv', newline='') as csvfile:
     filereader = csv.reader(csvfile, delimiter=',')
     for row in filereader:
-        validationEmbeddings[row[0]] = validationEmbeddings[row[0]].append([float(val) for val in row[1:]])
+        img_id = str(int(float(row[0])))
+        validationEmbeddings[img_id] = validationEmbeddings[img_id] + [float(val) for val in row[1:]]
 
 with open('/Users/anshulramachandran/Desktop/train3.csv', newline='') as csvfile:
     filereader = csv.reader(csvfile, delimiter=',')
     for row in filereader:
-        trainEmbeddings[row[0]] = trainEmbeddings[row[0]].append([float(val) for val in row[1:]])
+        img_id = str(int(float(row[0])))
+        trainEmbeddings[img_id] = trainEmbeddings[img_id] + [float(val) for val in row[1:]]
 
 with open('/Users/anshulramachandran/Desktop/validation3.csv', newline='') as csvfile:
     filereader = csv.reader(csvfile, delimiter=',')
     for row in filereader:
-        validationEmbeddings[row[0]] = validationEmbeddings[row[0]].append([float(val) for val in row[1:]])
+        img_id = str(int(float(row[0])))
+        validationEmbeddings[img_id] = validationEmbeddings[img_id] + [float(val) for val in row[1:]]
+
 
 train_rows = []
 for k, v in trainEmbeddings.items():
-    train_rows.append(v.insert(0, int(imageInfo[k])))
+    train_rows.append([int(imageInfo[k])] + v)
 
 validation_rows = []
 for k, v in validationEmbeddings.items():
-    validation_rows.append(v.insert(0, int(imageInfo[k])))
+    validation_rows.append([int(imageInfo[k])] + v)
 
 with open('/Users/anshulramachandran/Desktop/all_train.csv', "w") as f:
     writer = csv.writer(f)

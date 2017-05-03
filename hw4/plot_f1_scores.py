@@ -11,16 +11,15 @@ import matplotlib.pyplot as plt
 
 import os
 
+import csv
+
 counts = np.zeros(200)
 
 validationFolder = '/Users/anshulramachandran/Documents/Year3 Q3/CS148/CUB_200_2011/CUB_200_2011/validation/'
 for subdir in os.listdir(validationFolder):
     if subdir[0] != '.':
-        bird_class = int(subdir[:3])
+        bird_class = int(subdir[:3]) - 1
         counts[bird_class] = len(os.listdir(os.path.join(validationFolder, subdir)))
-
-print(counts)
-assert(False)
 
 iou_scores = []
 with open('/Users/anshulramachandran/Desktop/ious.csv', newline='') as csvfile:
@@ -37,38 +36,38 @@ for iou_conf in iou_scores:
 
 
 iou_scores = np.asarray(iou_scores)
-iou_scores[iou_scores[:,2].argsort()]
-iou_birds = np.split(iou_scores, np.where(np.diff(iou_scores[:,2]))[0]+1)
+iou_scores = iou_scores[iou_scores[:,2].argsort()]
 
-print(iou_birds)
-assert(False)
+iou_birds = np.split(iou_scores, np.where(np.diff(iou_scores[:,2]))[0]+1)
 
 peak_f1 = np.zeros(200)
 
 for i in range(200):
     iou_bird = iou_birds[i]
-    iou_bird[iou_bird[:,1].argsort()]
-    iou_bird = iou_bird[::-1]
-    print(iou_bird)
-    assert(False)
+    iou_bird = iou_bird[iou_bird[:,1].argsort()[::-1]]
 
     count_bird = counts[i]
 
     bird_f1 = []
 
     count_tp = 0
-    i = 0
-    while count_tp < total_correct_positives and i < len(iou_bird):
+    j = 0
+    while count_tp < count_bird and j < len(iou_bird):
     # for i in range(len(iou_scores)):
-        precision = float(np.sum(iou_bird[:(i+1),0])) / float(i+1)
-        recall = float(np.sum(iou_bird[:(i+1),0])) / count_bird
-        bird_f1.append(2 * precision * recall / (precision + recall))
-        i += 1
-        if iou_bird[i][0] == 1:
+        precision = float(np.sum([row[0] for row in iou_bird[:(j+1)]])) / float(j+1)
+        recall = float(np.sum([row[0] for row in iou_bird[:(j+1)]])) / count_bird
+        if precision == 0.0 and recall == 0.0:
+            bird_f1.append(0.0)
+        else:
+            bird_f1.append(2 * precision * recall / (precision + recall))
+        j += 1
+        if iou_bird[j][0] == 1:
             count_tp += 1
+
 
     peak_f1[i] = max(bird_f1)
 
+print(peak_f1)
 
 xaxis = np.asarray(range(1,201))
 

@@ -75,9 +75,9 @@ def processImage(imagePath):
     return background
 
 newTrainFolder = '/Users/anshulramachandran/Documents/Year3 Q3/CS148/CUB_200_2011/CUB_200_2011/train4'
-newvalidationFolder = '/Users/anshulramachandran/Documents/Year3 Q3/CS148/CUB_200_2011/CUB_200_2011/validation4'
+newValidationFolder = '/Users/anshulramachandran/Documents/Year3 Q3/CS148/CUB_200_2011/CUB_200_2011/validation4'
 shutil.copytree(trainFolder, newTrainFolder)
-# shutil.copytree(validationFolder, newvalidationFolder)
+shutil.copytree(validationFolder, newValidationFolder)
 
 aspect_ratios = [[1.0, 1.0], [1.0, 0.67], [0.67, 1.0], [0.8, 0.6], [0.6, 0.8], [1.0, 0.75], [0.75, 1.0], [1.0, 0.6], [0.6, 1.0], [1.0, 0.4], [0.4, 1.0]]
 
@@ -267,7 +267,24 @@ model = load_model('/Users/anshulramachandran/Desktop/multibox1.h5',
     custom_objects={'multibox_loss': multibox_loss, 'batchSize': 32, 'pboxes': pboxes, 'alpha': alpha})
 
 
-for path, subdirs, files in os.walk(newTrainFolder):
+# for path, subdirs, files in os.walk(newTrainFolder):
+#     for name in files:
+#         if name[0] != '.':
+#             # img = processImage(os.path.join(path, name))
+#             curr_img = processImage(os.path.join(path, name))
+#             img_to_predict = np.asarray([np.asarray(curr_img)])
+#             pred_boxes = model.predict(img_to_predict/255.0)[0]
+#             pred_boxes[:,:4] = pred_boxes[:,:4] + pboxes
+#             max_conf_idx = np.argmax(pred_boxes[:,4])
+#             # print(pred_boxes[:,4])
+#             # print(pred_boxes[max_conf_idx,:4])
+#             # print(pred_boxes[max_conf_idx][4])
+#
+#             new_img = curr_img.crop(pred_boxes[max_conf_idx,:4])
+#             scipy.misc.imsave(os.path.join(path, name), new_img)
+
+
+for path, subdirs, files in os.walk(newValidationFolder):
     for name in files:
         if name[0] != '.':
             # img = processImage(os.path.join(path, name))
@@ -282,10 +299,3 @@ for path, subdirs, files in os.walk(newTrainFolder):
 
             new_img = curr_img.crop(pred_boxes[max_conf_idx,:4])
             scipy.misc.imsave(os.path.join(path, name), new_img)
-
-
-# for path, subdirs, files in os.walk('./CUB_200_2011/validation4'):
-#     for name in files:
-#         if name[0] != '.':
-#             new_img = processImage(os.path.join(path, name), imageInfo[name])
-#             scipy.misc.imsave(os.path.join(path, name), new_img)

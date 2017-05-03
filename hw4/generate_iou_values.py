@@ -30,6 +30,10 @@ import csv
 height = 299
 width = 299
 
+batchSize = 32
+alpha = 10
+
+
 imgFolder = '/Users/anshulramachandran/Documents/Year3 Q3/CS148/CUB_200_2011/CUB_200_2011/images'
 trainFolder = '/Users/anshulramachandran/Documents/Year3 Q3/CS148/CUB_200_2011/CUB_200_2011/train'
 validationFolder = '/Users/anshulramachandran/Documents/Year3 Q3/CS148/CUB_200_2011/CUB_200_2011/validation'
@@ -65,6 +69,12 @@ for line in f:
     [img_id, label] = line.split(' ')
     imageInfo[img_id] = label[:-1]
 
+f = open(imageListFile, 'r')
+for line in f:
+    [img_id, path] = line.split(' ')
+    name_label[path[:-1].split('/')[-1]] = [imageInfo[img_id], img_id]
+    imageInfo[img_id] = [path[:-1], imageInfo[img_id]]
+
 def modify_bbox(x1, y1, x2, y2, height, width, imagePath):
     image = Image.open(imagePath)
     (currw, currh) = image.size
@@ -92,19 +102,10 @@ for line in f:
     y1 = float(y1)
     x2 = x1 + float(w)
     y2 = y1 + float(h)
-    print(imageInfo[img_id])
     bbox = modify_bbox(x1, y1, x2, y2, height, width, os.path.join(imgFolder, imageInfo[img_id][0]))
-    imageInfo[img_id] = [imageInfo[img_id][0], bbox]
+    imageInfo[img_id] = [imageInfo[img_id][0], imageInfo[img_id][1], bbox]
 
 
-f = open(imageListFile, 'r')
-for line in f:
-    [img_id, path] = line.split(' ')
-    name_label[path[:-1].split('/')[-1]] = [imageInfo[img_id][0], imageInfo[img_id][1]]
-    imageInfo[img_id] = [path[:-1], imageInfo[img_id][0], imageInfo[img_id][1]]
-
-print(name_label)
-assert(False)
 
 aspect_ratios = [[1.0, 1.0], [1.0, 0.67], [0.67, 1.0], [0.8, 0.6], [0.6, 0.8], [1.0, 0.75], [0.75, 1.0], [1.0, 0.6], [0.6, 1.0], [1.0, 0.4], [0.4, 1.0]]
 
@@ -186,7 +187,66 @@ def check_overlap(box1, box2):
     return (horiz and vert)
 
 
-model = load_model('/Users/anshulramachandran/Desktop/multibox1.h5')
+
+def multibox_loss(y_true, y_pred):
+    ground_boxes = y_true[:, :, :4]
+    # ground_box = np.split(y_true, [5, y_len], axis=1)[0]
+    locs = y_pred[:, :, :4]
+    confs = y_pred[:, :, 4]
+    # locs, confs = np.split(y_pred, [int(0.8*y_len), y_len], axis=1)
+    # pred_boxes = np.split(locs, 1420, axis=1)
+
+    # min_losses = K.placeholder(shape=(batchSize,))
+    min_losses = []
+
+    for b in range(batchSize):
+
+        batch_gt = ground_boxes[b]
+        batch_preds = locs[b] + pboxes
+        batch_confs = K.clip(confs[b], 0.0001, 0.9999)
+
+        conf_sum = K.sum(K.log(1 - batch_confs))
+        conf_loss = -conf_sum + K.log(1-batch_confs) - K.log(batch_confs)
+
+        loc_loss = 0.5 * K.sum(K.square(batch_gt - batch_preds), axis=1)
+
+        min_loss = K.min(conf_loss + alpha * loc_loss)
+
+        min_losses.append(min_loss)
+
+        # batch_boxes = locs[b]
+        # ground_box = ground_boxes[b]
+        # batch_conf = confs[b]
+        # conf_sum = K.sum(K.log(1 - batch_conf))
+        #
+        # min_loss = K.constant(100000.0)
+        # # all_losses = K.placeholder(shape=(y_len,))
+        # all_losses = np.zeros(y_len)
+        #
+        # min_loss = K.min(K.map_fn(batch_map, y_pred[b, :, :], axis=0))
+        # for i in range(y_len):
+        #
+        #
+        #     pred_box = batch_boxes[i, :]
+        #     conf = batch_conf[i]
+        #
+        #     loss = (conf_loss(conf, conf_sum) +
+        #             alpha * loc_loss(ground_box, pred_box))
+        #
+        #     print(loss.shape)
+        #
+        #     all_losses[i] = loss
+        #     # if K.less(loss, min_loss):
+        #     #     min_loss = loss
+        #
+        # min_losses[b] = K.min(K.variable(all_losses))
+
+    min_losses_tensor = K.stack(min_losses)
+    return min_losses_tensor
+
+
+model = load_model('/Users/anshulramachandran/Desktop/multibox1.h5',
+    custom_objects={'multibox_loss': multibox_loss, 'batchSize': 32, 'pboxes': pboxes, 'alpha': alpha})
 
 iou_scores = []
 
@@ -195,32 +255,22 @@ for path, subdirs, files in os.walk(validationFolder):
     for name in files:
         if name[0] != '.':
             label = name_label[name][0]
-            gbox = name_label[name][1]
+            gbox = imageInfo[name_label[name][1]][2]
             curr_img = np.asarray([np.asarray(processImage(os.path.join(path, name)))])
-            pred_boxes = model.predict(curr_img/255.0)
-            print(pred_boxes.shape)
-            assert(0 == 1)
+            pred_boxes = model.predict(curr_img/255.0)[0]
             pred_boxes[:, :4] = pred_boxes[:, :4] + pboxes
             for box_conf in pred_boxes:
                 if check_overlap(box_conf[:4], gbox):
                     iou_score = intersection_over_union(box_conf[:4], gbox)
                 else:
                     iou_score = 0.0
-                iou_scores.append([iou_score, box_conf[4], label])
-            print(iou_scores)
-            assert(False)
+                iou_scores.append([iou_score, box_conf[4], int(label)])
             count += 1
             if count % 100 == 0:
                 print(count)
 
 iou_scores = np.asarray(iou_scores)
-iou_scores[iou_scores[:,1].argsort()]
-print(iou_scores[:100])
-assert(False)
-
-iou_scores = iou_scores[::-1]
-print(iou_scores[:100])
-assert(False)
+iou_scores = iou_scores[iou_scores[:,1].argsort()[::-1]]
 
 with open('/Users/anshulramachandran/Desktop/ious.csv', 'w', newline='') as csvfile:
     datawriter = csv.writer(csvfile, delimiter=',')

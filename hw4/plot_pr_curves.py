@@ -17,7 +17,7 @@ with open('/Users/anshulramachandran/Desktop/ious.csv', newline='') as csvfile:
     for row in datareader:
         iou_scores.append([float(row[0]), float(row[1])])
 
-iou_thresh = 0.1
+iou_thresh = 0.3
 for iou_conf in iou_scores:
     if iou_conf[0] > iou_thresh:
         iou_conf[0] = 1

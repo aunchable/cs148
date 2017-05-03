@@ -245,7 +245,7 @@ def multibox_loss(y_true, y_pred):
     return min_losses_tensor
 
 
-model = load_model('/Users/anshulramachandran/Desktop/multibox1.h5',
+model = load_model('/Users/anshulramachandran/Desktop/multibox2.h5',
     custom_objects={'multibox_loss': multibox_loss, 'batchSize': 32, 'pboxes': pboxes, 'alpha': alpha})
 
 iou_scores = []
@@ -272,7 +272,7 @@ for path, subdirs, files in os.walk(validationFolder):
 iou_scores = np.asarray(iou_scores)
 iou_scores = iou_scores[iou_scores[:,1].argsort()[::-1]]
 
-with open('/Users/anshulramachandran/Desktop/ious.csv', 'w', newline='') as csvfile:
+with open('/Users/anshulramachandran/Desktop/ious2.csv', 'w', newline='') as csvfile:
     datawriter = csv.writer(csvfile, delimiter=',')
     for i in range(len(iou_scores)):
         datawriter.writerow(iou_scores[i])

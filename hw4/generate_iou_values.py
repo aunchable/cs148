@@ -92,6 +92,7 @@ for line in f:
     y1 = float(y1)
     x2 = x1 + float(w)
     y2 = y1 + float(h)
+    print(imageInfo[img_id])
     bbox = modify_bbox(x1, y1, x2, y2, height, width, os.path.join(imgFolder, imageInfo[img_id][0]))
     imageInfo[img_id] = [imageInfo[img_id][0], bbox]
 

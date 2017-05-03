@@ -1,5 +1,3 @@
-# FOR PROBLEM 3
-
 from keras.applications.inception_v3 import InceptionV3
 from keras.preprocessing import image
 from keras.preprocessing.image import ImageDataGenerator

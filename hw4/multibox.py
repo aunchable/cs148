@@ -357,7 +357,7 @@ for layer in base_model.layers:
 # we need to recompile the model for these modifications to take effect
 # we use SGD with a low learning rate
 from keras.optimizers import SGD
-model.compile(optimizer=SGD(lr=0.001), loss=multibox_loss, metrics=['acc'])
+model.compile(optimizer=SGD(lr=0.0001), loss=multibox_loss, metrics=['acc'])
 
 # assert(0 == 1)
 # train_datagen = ImageDataGenerator(

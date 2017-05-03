@@ -75,7 +75,7 @@ def processImage(imagePath):
     return background
 
 # newTrainFolder = '/Users/anshulramachandran/Documents/Year3 Q3/CS148/CUB_200_2011/CUB_200_2011/train4'
-# newValidationFolder = '/Users/anshulramachandran/Documents/Year3 Q3/CS148/CUB_200_2011/CUB_200_2011/validation4'
+newValidationFolder = '/Users/anshulramachandran/Documents/Year3 Q3/CS148/CUB_200_2011/CUB_200_2011/validation4'
 # shutil.copytree(trainFolder, newTrainFolder)
 # shutil.copytree(validationFolder, newValidationFolder)
 

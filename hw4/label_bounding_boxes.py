@@ -74,7 +74,7 @@ def processImage(imagePath):
     )
     return background
 
-newValidationFolder = '/Users/anshulramachandran/Documents/Year3 Q3/CS148/CUB_200_2011/CUB_200_2011/boxes1'
+newValidationFolder = '/Users/anshulramachandran/Documents/Year3 Q3/CS148/CUB_200_2011/CUB_200_2011/boxes2'
 shutil.copytree(validationFolder, newValidationFolder)
 
 aspect_ratios = [[1.0, 1.0], [1.0, 0.67], [0.67, 1.0], [0.8, 0.6], [0.6, 0.8], [1.0, 0.75], [0.75, 1.0], [1.0, 0.6], [0.6, 1.0], [1.0, 0.4], [0.4, 1.0]]
@@ -270,7 +270,7 @@ def add_bounding_boxes(img, box_confs):
     img = img.convert("RGBA")
     (currw, currh) = img.size
     box_confs = box_confs[box_confs[:,4].argsort()[::-1]]
-    for i in [4,3,2,1,0]:
+    for i in [0]:
         box = [int(k) for k in box_confs[i][:4]]
         if box[0] < 0:
             box[0] = 0
@@ -284,7 +284,7 @@ def add_bounding_boxes(img, box_confs):
         for x in range(box[0], box[2] + 1):
             for y in range(box[1], box[3] + 1):
                 rgb = img.getpixel((x,y))
-                rgb = (rgb[0], rgb[1], rgb[2], int(255 * (conf)))
+                rgb = (int(conf*rgb[0]), int(conf*rgb[1]), int(conf*rgb[2]), int(255 * (conf)))
                 img.putpixel((x,y), rgb)
         for x in range(box[0], box[2] + 1):
             img.putpixel((x,box[1]), (255,0,0,255))

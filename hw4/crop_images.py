@@ -74,10 +74,10 @@ def processImage(imagePath):
     )
     return background
 
-newTrainFolder = '/Users/anshulramachandran/Documents/Year3 Q3/CS148/CUB_200_2011/CUB_200_2011/train4'
-newValidationFolder = '/Users/anshulramachandran/Documents/Year3 Q3/CS148/CUB_200_2011/CUB_200_2011/validation4'
-shutil.copytree(trainFolder, newTrainFolder)
-shutil.copytree(validationFolder, newValidationFolder)
+# newTrainFolder = '/Users/anshulramachandran/Documents/Year3 Q3/CS148/CUB_200_2011/CUB_200_2011/train4'
+# newValidationFolder = '/Users/anshulramachandran/Documents/Year3 Q3/CS148/CUB_200_2011/CUB_200_2011/validation4'
+# shutil.copytree(trainFolder, newTrainFolder)
+# shutil.copytree(validationFolder, newValidationFolder)
 
 aspect_ratios = [[1.0, 1.0], [1.0, 0.67], [0.67, 1.0], [0.8, 0.6], [0.6, 0.8], [1.0, 0.75], [0.75, 1.0], [1.0, 0.6], [0.6, 1.0], [1.0, 0.4], [0.4, 1.0]]
 

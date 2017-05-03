@@ -383,7 +383,7 @@ model.compile(optimizer=SGD(lr=0.00001), loss=multibox_loss, metrics=['acc'])
 history2 = TrainingHistory()
 history = model.fit_generator(imgGenerator(batchSize, True),
                               steps_per_epoch=int(float(len(indices_for_train)) / 32.0),
-                              epochs=100,
+                              epochs=25,
                               validation_data=imgGenerator(batchSize, False),
                               validation_steps=int(float(len(indices_for_val)) / 32.0),
                               callbacks=[history2])

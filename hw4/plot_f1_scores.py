@@ -72,6 +72,25 @@ print(peak_f1)
 xaxis = np.asarray(range(1,201))
 
 plt.bar(xaxis, peak_f1, align='center', alpha=0.5)
+plt.xlabel('Bird class label')
 plt.ylabel('F1 score')
 plt.title('Peak F1 score over the 200 bird species')
-plt.show()
+
+plt.savefig('./graphs/f1_1.png')
+plt.clf()
+plt.cla()
+plt.close()
+
+xy = np.vstack((xaxis, peak_f1)).T
+xy = xy[xy[:,1].argsort()[::-1]]
+xy = xy.T
+
+plt.bar(xaxis, xy[1], align='center', alpha=0.5)
+# plt.xlabel('Bird class label')
+plt.ylabel('F1 score')
+plt.title('Peak F1 score over the 200 bird species')
+
+plt.savefig('./graphs/f1_2.png')
+plt.clf()
+plt.cla()
+plt.close()

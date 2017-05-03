@@ -17,7 +17,7 @@ with open('/Users/anshulramachandran/Desktop/ious.csv', newline='') as csvfile:
     for row in datareader:
         iou_scores.append([float(row[0]), float(row[1])])
 
-iou_thresh = 0.3
+iou_thresh = 0.2
 for iou_conf in iou_scores:
     if iou_conf[0] > iou_thresh:
         iou_conf[0] = 1
@@ -45,5 +45,9 @@ plt.xlabel('Recall')
 plt.ylabel('Precision')
 plt.xlim([0,1])
 plt.ylim([0,1])
-plt.title('Precision-recall curve for IOU threhold = 0.1')
-plt.show()
+plt.title('Precision-recall curve for IOU threhold = 0.2')
+
+plt.savefig('./graphs/pr2.png')
+plt.clf()
+plt.cla()
+plt.close()

@@ -24,7 +24,6 @@ for iou_conf in iou_scores:
     else:
         iou_conf[0] = 0
 
-# total_positive_results = float(np.sum(iou_scores[:,1]))
 total_correct_positives = 5794.0
 
 precision = []
@@ -33,7 +32,6 @@ recall = []
 count_tp = 0
 i = 0
 while count_tp < total_correct_positives and i < len(iou_scores):
-# for i in range(len(iou_scores)):
     precision.append(float(np.sum([row[0] for row in iou_scores[:(i+1)]])) / float(i+1))
     recall.append(float(np.sum([row[0] for row in iou_scores[:(i+1)]])) / total_correct_positives)
     i += 1

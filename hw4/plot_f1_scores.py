@@ -53,7 +53,6 @@ for i in range(200):
     count_tp = 0
     j = 0
     while count_tp < count_bird and j < len(iou_bird):
-    # for i in range(len(iou_scores)):
         precision = float(np.sum([row[0] for row in iou_bird[:(j+1)]])) / float(j+1)
         recall = float(np.sum([row[0] for row in iou_bird[:(j+1)]])) / count_bird
         if precision == 0.0 and recall == 0.0:
@@ -86,7 +85,6 @@ xy = xy[xy[:,1].argsort()[::-1]]
 xy = xy.T
 
 plt.bar(xaxis, xy[1], align='center', alpha=0.5)
-# plt.xlabel('Bird class label')
 plt.ylabel('F1 score')
 plt.title('Peak F1 score over the 200 bird species')
 

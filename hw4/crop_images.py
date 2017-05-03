@@ -24,7 +24,6 @@ labelListFile = '/Users/anshulramachandran/Documents/Year3 Q3/CS148/CUB_200_2011
 splitListFile = '/Users/anshulramachandran/Documents/Year3 Q3/CS148/CUB_200_2011/CUB_200_2011/train_test_split.txt'
 bboxListFile = '/Users/anshulramachandran/Documents/Year3 Q3/CS148/CUB_200_2011/CUB_200_2011/bounding_boxes.txt'
 
-
 # trainFolder = './CUB_200_2011/train'
 # validationFolder = './CUB_200_2011/validation'
 # imageListFile = './CUB_200_2011/images.txt'
@@ -57,8 +56,6 @@ for line in f:
     y2 = y1 + float(h)
     imageInfo[imageInfo[img_id]] = (x1, y1, x2, y2)
     imageInfo[img_id] = [imageInfo[img_id], (x1, y1, x2, y2)]
-
-# print(imageInfo['Black_Footed_Albatross_0046_18.jpg'])
 
 def processImage(imagePath):
     image = Image.open(imagePath)
@@ -172,51 +169,18 @@ def bounding_box_prediction_layers(inputs, bboxes_per_cell, batch_size):
     locs11 = Reshape((-1,4))(endpoints['branch11_locs'])
     confs11 = Reshape((-1,1))(endpoints['branch11_confs'])
 
-    # locs88 = tf.reshape(endpoints['branch88_locs'], [batch_size, -1])
-    # confs88 = tf.reshape(endpoints['branch88_confs'], [batch_size, -1])
-    # locs66 = tf.reshape(endpoints['branch66_locs'], [batch_size, -1])
-    # confs66 = tf.reshape(endpoints['branch66_confs'], [batch_size, -1])
-    # locs44 = tf.reshape(endpoints['branch44_locs'], [batch_size, -1])
-    # confs44 = tf.reshape(endpoints['branch44_confs'], [batch_size, -1])
-    # locs33 = tf.reshape(endpoints['branch33_locs'], [batch_size, -1])
-    # confs33 = tf.reshape(endpoints['branch33_confs'], [batch_size, -1])
-    # locs22 = tf.reshape(endpoints['branch22_locs'], [batch_size, -1])
-    # confs22 = tf.reshape(endpoints['branch22_confs'], [batch_size, -1])
-    # locs11 = tf.reshape(endpoints['branch11_locs'], [batch_size, -1])
-    # confs11 = tf.reshape(endpoints['branch11_confs'], [batch_size, -1])
-
     locs = Concatenate(axis=1)([locs88, locs66, locs44, locs33, locs22, locs11])
-
-
     confs = Concatenate(axis=1)([confs88, confs66, confs44, confs33, confs22, confs11])
-    # confs = Reshape((-1,))(confs)
-
     loc_confs = Concatenate(axis=2)([locs, confs])
-
-
-    # locs = tf.concat([locs88, locs66, locs44, locs33, locs22, locs11], 1)
-    # locs = tf.reshape(locs, [batch_size, -1, 4])
-    #
-    # confs = tf.concat([confs88, confs66, confs44, confs33, confs22, confs11], 1)
-    # confs = tf.reshape(confs, [batch_size, -1, 1])
-    # confs = tf.sigmoid(confs)
-    #
-    # loc_confs = tf.concat([locs, confs], 1)
-
     return loc_confs
 
 
 def multibox_loss(y_true, y_pred):
     ground_boxes = y_true[:, :, :4]
-    # ground_box = np.split(y_true, [5, y_len], axis=1)[0]
     locs = y_pred[:, :, :4]
     confs = y_pred[:, :, 4]
-    # locs, confs = np.split(y_pred, [int(0.8*y_len), y_len], axis=1)
-    # pred_boxes = np.split(locs, 1420, axis=1)
 
-    # min_losses = K.placeholder(shape=(batchSize,))
     min_losses = []
-
     for b in range(batchSize):
 
         batch_gt = ground_boxes[b]
@@ -225,39 +189,10 @@ def multibox_loss(y_true, y_pred):
 
         conf_sum = K.sum(K.log(1 - batch_confs))
         conf_loss = -conf_sum + K.log(1-batch_confs) - K.log(batch_confs)
-
         loc_loss = 0.5 * K.sum(K.square(batch_gt - batch_preds), axis=1)
 
         min_loss = K.min(conf_loss + alpha * loc_loss)
-
         min_losses.append(min_loss)
-
-        # batch_boxes = locs[b]
-        # ground_box = ground_boxes[b]
-        # batch_conf = confs[b]
-        # conf_sum = K.sum(K.log(1 - batch_conf))
-        #
-        # min_loss = K.constant(100000.0)
-        # # all_losses = K.placeholder(shape=(y_len,))
-        # all_losses = np.zeros(y_len)
-        #
-        # min_loss = K.min(K.map_fn(batch_map, y_pred[b, :, :], axis=0))
-        # for i in range(y_len):
-        #
-        #
-        #     pred_box = batch_boxes[i, :]
-        #     conf = batch_conf[i]
-        #
-        #     loss = (conf_loss(conf, conf_sum) +
-        #             alpha * loc_loss(ground_box, pred_box))
-        #
-        #     print(loss.shape)
-        #
-        #     all_losses[i] = loss
-        #     # if K.less(loss, min_loss):
-        #     #     min_loss = loss
-        #
-        # min_losses[b] = K.min(K.variable(all_losses))
 
     min_losses_tensor = K.stack(min_losses)
     return min_losses_tensor
@@ -270,15 +205,11 @@ model = load_model('/Users/anshulramachandran/Desktop/multibox2.h5',
 for path, subdirs, files in os.walk(newTrainFolder):
     for name in files:
         if name[0] != '.':
-            # img = processImage(os.path.join(path, name))
             curr_img = processImage(os.path.join(path, name))
             img_to_predict = np.asarray([np.asarray(curr_img)])
             pred_boxes = model.predict(img_to_predict/255.0)[0]
             pred_boxes[:,:4] = pred_boxes[:,:4] + pboxes
             max_conf_idx = np.argmax(pred_boxes[:,4])
-            # print(pred_boxes[:,4])
-            # print(pred_boxes[max_conf_idx,:4])
-            # print(pred_boxes[max_conf_idx][4])
             bbox = pred_boxes[max_conf_idx,:4]
 
             if bbox[2] > bbox[0] and bbox[3] > bbox[1]:
@@ -292,15 +223,16 @@ for path, subdirs, files in os.walk(newTrainFolder):
 for path, subdirs, files in os.walk(newValidationFolder):
     for name in files:
         if name[0] != '.':
-            # img = processImage(os.path.join(path, name))
             curr_img = processImage(os.path.join(path, name))
             img_to_predict = np.asarray([np.asarray(curr_img)])
             pred_boxes = model.predict(img_to_predict/255.0)[0]
             pred_boxes[:,:4] = pred_boxes[:,:4] + pboxes
             max_conf_idx = np.argmax(pred_boxes[:,4])
-            # print(pred_boxes[:,4])
-            # print(pred_boxes[max_conf_idx,:4])
-            # print(pred_boxes[max_conf_idx][4])
+            bbox = pred_boxes[max_conf_idx,:4]
 
-            new_img = curr_img.crop(pred_boxes[max_conf_idx,:4])
+            if bbox[2] > bbox[0] and bbox[3] > bbox[1]:
+                new_img = curr_img.crop(bbox)
+            else:
+                new_img = curr_img
+
             scipy.misc.imsave(os.path.join(path, name), new_img)

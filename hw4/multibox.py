@@ -233,8 +233,6 @@ def bounding_box_prediction_layers(inputs, bboxes_per_cell, batch_size):
     endpoints['branch11_locs'] = Conv2D(4, (1, 1), strides=1, padding='same')(branch11)
     endpoints['branch11_confs'] = Conv2D(1, (1, 1), strides=1, padding='same', activation='sigmoid')(branch11)
 
-    # batch_size = tf.shape(inputs)[0]
-
     locs88 = Reshape((-1,4))(endpoints['branch88_locs'])
     confs88 = Reshape((-1,1))(endpoints['branch88_confs'])
     locs66 = Reshape((-1,4))(endpoints['branch66_locs'])
@@ -248,49 +246,16 @@ def bounding_box_prediction_layers(inputs, bboxes_per_cell, batch_size):
     locs11 = Reshape((-1,4))(endpoints['branch11_locs'])
     confs11 = Reshape((-1,1))(endpoints['branch11_confs'])
 
-    # locs88 = tf.reshape(endpoints['branch88_locs'], [batch_size, -1])
-    # confs88 = tf.reshape(endpoints['branch88_confs'], [batch_size, -1])
-    # locs66 = tf.reshape(endpoints['branch66_locs'], [batch_size, -1])
-    # confs66 = tf.reshape(endpoints['branch66_confs'], [batch_size, -1])
-    # locs44 = tf.reshape(endpoints['branch44_locs'], [batch_size, -1])
-    # confs44 = tf.reshape(endpoints['branch44_confs'], [batch_size, -1])
-    # locs33 = tf.reshape(endpoints['branch33_locs'], [batch_size, -1])
-    # confs33 = tf.reshape(endpoints['branch33_confs'], [batch_size, -1])
-    # locs22 = tf.reshape(endpoints['branch22_locs'], [batch_size, -1])
-    # confs22 = tf.reshape(endpoints['branch22_confs'], [batch_size, -1])
-    # locs11 = tf.reshape(endpoints['branch11_locs'], [batch_size, -1])
-    # confs11 = tf.reshape(endpoints['branch11_confs'], [batch_size, -1])
-
     locs = Concatenate(axis=1)([locs88, locs66, locs44, locs33, locs22, locs11])
-
-
     confs = Concatenate(axis=1)([confs88, confs66, confs44, confs33, confs22, confs11])
-    # confs = Reshape((-1,))(confs)
-
     loc_confs = Concatenate(axis=2)([locs, confs])
-
-
-    # locs = tf.concat([locs88, locs66, locs44, locs33, locs22, locs11], 1)
-    # locs = tf.reshape(locs, [batch_size, -1, 4])
-    #
-    # confs = tf.concat([confs88, confs66, confs44, confs33, confs22, confs11], 1)
-    # confs = tf.reshape(confs, [batch_size, -1, 1])
-    # confs = tf.sigmoid(confs)
-    #
-    # loc_confs = tf.concat([locs, confs], 1)
-
     return loc_confs
 
 
 def multibox_loss(y_true, y_pred):
     ground_boxes = y_true[:, :, :4]
-    # ground_box = np.split(y_true, [5, y_len], axis=1)[0]
     locs = y_pred[:, :, :4]
     confs = y_pred[:, :, 4]
-    # locs, confs = np.split(y_pred, [int(0.8*y_len), y_len], axis=1)
-    # pred_boxes = np.split(locs, 1420, axis=1)
-
-    # min_losses = K.placeholder(shape=(batchSize,))
     min_losses = []
 
     for b in range(batchSize):
@@ -301,46 +266,15 @@ def multibox_loss(y_true, y_pred):
 
         conf_sum = K.sum(K.log(1 - batch_confs))
         conf_loss = -conf_sum + K.log(1-batch_confs) - K.log(batch_confs)
-
         loc_loss = 0.5 * K.sum(K.square(batch_gt - batch_preds), axis=1)
-
         min_loss = K.min(conf_loss + alpha * loc_loss)
-
         min_losses.append(min_loss)
-
-        # batch_boxes = locs[b]
-        # ground_box = ground_boxes[b]
-        # batch_conf = confs[b]
-        # conf_sum = K.sum(K.log(1 - batch_conf))
-        #
-        # min_loss = K.constant(100000.0)
-        # # all_losses = K.placeholder(shape=(y_len,))
-        # all_losses = np.zeros(y_len)
-        #
-        # min_loss = K.min(K.map_fn(batch_map, y_pred[b, :, :], axis=0))
-        # for i in range(y_len):
-        #
-        #
-        #     pred_box = batch_boxes[i, :]
-        #     conf = batch_conf[i]
-        #
-        #     loss = (conf_loss(conf, conf_sum) +
-        #             alpha * loc_loss(ground_box, pred_box))
-        #
-        #     print(loss.shape)
-        #
-        #     all_losses[i] = loss
-        #     # if K.less(loss, min_loss):
-        #     #     min_loss = loss
-        #
-        # min_losses[b] = K.min(K.variable(all_losses))
 
     min_losses_tensor = K.stack(min_losses)
     return min_losses_tensor
 
 
 # create the base pre-trained model
-#base_model = InceptionV3(weights='imagenet', include_top=False, input_shape=(width, height, 3))
 base_model = InceptionV3(weights='imagenet', include_top=False, input_shape=(height, width, 3))
 
 # add a global spatial average pooling layer
@@ -359,25 +293,6 @@ for layer in base_model.layers:
 from keras.optimizers import SGD
 model.compile(optimizer=SGD(lr=0.00001), loss=multibox_loss, metrics=['acc'])
 
-# assert(0 == 1)
-# train_datagen = ImageDataGenerator(
-#         rescale=1./255,
-#         zoom_range=0.2,
-#         rotation_range=15,
-#         horizontal_flip=True)
-#
-# test_datagen = ImageDataGenerator(rescale=1./255)
-#
-# train_generator = train_datagen.flow_from_directory(
-#         trainFolder,
-#         target_size=(height, width),
-#         batch_size=32)
-#
-# validation_generator = test_datagen.flow_from_directory(
-#         validationFolder,
-#         target_size=(height, width),
-#         batch_size=32)
-
 # we train our model again (this time fine-tuning the top 2 inception blocks
 # alongside the top Dense layers
 history2 = TrainingHistory()
@@ -391,6 +306,5 @@ history = model.fit_generator(imgGenerator(batchSize, True),
 print(history.history)
 print(history2.val_losses, history2.val_accs)
 print(history2.losses[0::20], history2.val_losses, history2.accs[0::20], history2.val_accs)
-# print(history2.losses, history2.val_losses, history2.accs, history2.val_accs)
 
-model.save('multibox2.h5')
+model.save('multibox.h5')

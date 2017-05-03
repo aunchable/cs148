@@ -71,8 +71,6 @@ def processImage(imagePath):
         image = image.resize((width, int(float(currh) * float(width) / float(currw))))
     else:
         image = image.resize((int(float(currw) * float(height) / float(currh)), height))
-    # image.thumbnail((width, height), Image.ANTIALIAS)
-    # return image
     background = Image.new('RGB', (width, height), (0, 0, 0))
     background.paste(
         image, (int((width - image.size[0]) / 2), int((height - image.size[1]) / 2))
@@ -82,7 +80,6 @@ def processImage(imagePath):
 
 model = load_model('/Users/anshulramachandran/Desktop/model_mbcrop2.h5')
 
-# Generate confusion matrix
 confusion_matrix = np.zeros(shape=(200,200))
 
 count = 0

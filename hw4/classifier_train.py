@@ -1,4 +1,4 @@
-# FOR PROBLEM 2
+# Trains classifier using cropped images
 
 from keras.applications.inception_v3 import InceptionV3
 from keras.preprocessing import image

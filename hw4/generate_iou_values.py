@@ -190,13 +190,8 @@ def check_overlap(box1, box2):
 
 def multibox_loss(y_true, y_pred):
     ground_boxes = y_true[:, :, :4]
-    # ground_box = np.split(y_true, [5, y_len], axis=1)[0]
     locs = y_pred[:, :, :4]
     confs = y_pred[:, :, 4]
-    # locs, confs = np.split(y_pred, [int(0.8*y_len), y_len], axis=1)
-    # pred_boxes = np.split(locs, 1420, axis=1)
-
-    # min_losses = K.placeholder(shape=(batchSize,))
     min_losses = []
 
     for b in range(batchSize):
@@ -213,33 +208,6 @@ def multibox_loss(y_true, y_pred):
         min_loss = K.min(conf_loss + alpha * loc_loss)
 
         min_losses.append(min_loss)
-
-        # batch_boxes = locs[b]
-        # ground_box = ground_boxes[b]
-        # batch_conf = confs[b]
-        # conf_sum = K.sum(K.log(1 - batch_conf))
-        #
-        # min_loss = K.constant(100000.0)
-        # # all_losses = K.placeholder(shape=(y_len,))
-        # all_losses = np.zeros(y_len)
-        #
-        # min_loss = K.min(K.map_fn(batch_map, y_pred[b, :, :], axis=0))
-        # for i in range(y_len):
-        #
-        #
-        #     pred_box = batch_boxes[i, :]
-        #     conf = batch_conf[i]
-        #
-        #     loss = (conf_loss(conf, conf_sum) +
-        #             alpha * loc_loss(ground_box, pred_box))
-        #
-        #     print(loss.shape)
-        #
-        #     all_losses[i] = loss
-        #     # if K.less(loss, min_loss):
-        #     #     min_loss = loss
-        #
-        # min_losses[b] = K.min(K.variable(all_losses))
 
     min_losses_tensor = K.stack(min_losses)
     return min_losses_tensor

@@ -389,6 +389,8 @@ history = model.fit_generator(imgGenerator(batchSize, True),
                               callbacks=[history2])
 
 print(history.history)
-print(history2.losses, history2.val_losses, history2.accs, history2.val_accs)
+print(history2.val_losses, history2.val_accs)
+print(history2.losses[0::20], history2.val_losses, history2.accs[0::20], history2.val_accs)
+# print(history2.losses, history2.val_losses, history2.accs, history2.val_accs)
 
 model.save('multibox1.h5')

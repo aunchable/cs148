@@ -152,4 +152,4 @@ history = model.fit_generator(train_generator,
 print(history.history)
 print(history2.losses, history2.val_losses, history2.accs, history2.val_accs)
 
-model.save('model_mbcrop1.h5')
+model.save('model_mbcrop2.h5')
